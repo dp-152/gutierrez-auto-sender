@@ -36,6 +36,7 @@ venom.create(settings.instance.name).then(
 async function listener(client) {
 
     console.log(`Instance name: ${settings.instance.name}`);
+    console.log("Running listener for account");
     client.onMessage((message => {
         if (message.body === '2'){
             client.sendText(message.from, "Hi there!");
@@ -62,6 +63,8 @@ async function massSend(client) {
     let campaignContent = loadCampaignFiles(argv.dir);
     //let campaign_text = [];
     //let campaign_files = [];
+
+
 
     // Sleep for 5 seconds after init, before starting send job
     await new Promise(resolve => {
@@ -123,14 +126,14 @@ function loadCampaignFiles(dir){
     // Iterator to folder.
     let campaignText = [];
     let campaignFiles = [];
-    fs.readdir(dir, (err, files) => {
+    let files = fs.readdirSync(dir);
 
-        files.forEach(file => {
-          console.log(`Acquired file: ${file}`);
-          var ext = path.extname(file).substring(1);
-          ext == "txt" ? campaignText.push(file) : campaignFiles.push(file);
-        });
-      });
+    files.forEach(file => {
+        console.log(`Acquired file: ${file}`);
+        var ext = path.extname(file).substring(1);
+        ext == "txt" ? campaignText.push(file) : campaignFiles.push(file);
+    });
+
     return {
         "text": campaignText,
         "files": campaignFiles
