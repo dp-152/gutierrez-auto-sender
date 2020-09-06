@@ -2,15 +2,15 @@ const venom = require('venom-bot');
 const fs = require('fs');
 const ini = require('ini');
 const {argv} = require('yargs');
-
+const path = require('path');
 
 /*
     TODO:
-        - *Pass JSON send list to venom client*
+        - Pass JSON send list to venom client DONE
         - Log sends to file
         - client.onMessage listener for send list auto removal
-        - Implement message text DONE
-        - Implement file attachments DONE
+        - Implement message text ONGOING
+        - Implement file attachments ONGOING
         - Implement timeouts from config file
         - Create function to count characters and apply settings file CPM parameter as typing length
             - Enable variance for typing speed
@@ -25,7 +25,10 @@ let sendList = JSON.parse(fs.readFileSync(argv.list, encoding='utf-8'));
 // Enumerate send dir text and attachment files from --campaign argument
 // Attachment files will be sent in alphabetical order
 // Rename files before sending? meh
-let sendDir = ''
+let sendDir = argv.dir
+let campaign_text = []
+let campaign_files = []
+
 // Temporary placeholder for text file/content
 let lipsumText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
 
@@ -98,18 +101,19 @@ async function massSend(client) {
             client.stopTyping(targetID).then();
             console.log("Stopped typing");
 
+
         }
     }
 }
 
 // Function for setting wait time to simulate human typing
 // Returns wait time in milliseconds
-function typeTime(textLength, CPM){
+function typeTime(textLength, CPM) {
     // Allows for random variance of up to n%
     // TODO: Set variance percentage as ini parameter
     CPM = parseInt(CPM);
-    let minCPM = Math.ceil(CPM - ((CPM/100) * 20));
-    let maxCPM = Math.floor(CPM + ((CPM/100) * 20));
+    let minCPM = Math.ceil(CPM - ((CPM / 100) * 20));
+    let maxCPM = Math.floor(CPM + ((CPM / 100) * 20));
     let randomCPM = Math.floor(Math.random() * (maxCPM - minCPM + 1) + minCPM);
 
     // Use CPM to get seconds per character, then multiply by length of text
@@ -118,4 +122,16 @@ function typeTime(textLength, CPM){
     let totalTime = textLength * SPC * 1000;
 
     return Math.trunc(totalTime);
+}
+
+function loadCampaignFiles()
+{
+    // Iterator to folder.
+    fs.readdir(folder, (err, files) => {
+        files.forEach(file => {
+          console.log(file);
+          var ext = path.extname(file).substring(1);
+          ext == "txt" ? campaign_text.push(file) : campaign_files.push(file);
+        });
+      });
 }
