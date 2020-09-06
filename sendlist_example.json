@@ -1,12 +1,12 @@
 {
-    "contacts": [
-      { 
-          "name": "John S",
-          "phone":"55419999999"
-      }, 
-      { 
-          "name": "John D",
-          "phone":"55419999999"
-      }
-    ]
+  "contacts": [
+    {
+      "name": "John S",
+      "phone":"554190000000"
+    },
+    {
+      "name": "John D",
+      "phone":"5541900000000"
+    }
+  ]
 }

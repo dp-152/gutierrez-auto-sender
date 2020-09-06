@@ -21,7 +21,6 @@ dist/
 
 # Maven
 target/
-dist/
 
 # JetBrains IDE
 .idea/
@@ -49,4 +48,8 @@ Thumbs.db
 *.wmv
 
 # Tokens for Venom Bot
-/tokensw
+/tokens
+
+# Exclusion for local config files
+config.ini
+sendlist.json
