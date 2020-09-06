@@ -59,11 +59,9 @@ async function massSend(client) {
     // Enumerate send dir text and attachment files from --dir argument
     // Attachment files will be sent in alphabetical order
     // Rename files before sending? meh
-    let sendDir = loadCampaignFiles(argv.dir);
-    let campaign_text = [];
-    let campaign_files = [];
-
-
+    let campaignContent = loadCampaignFiles(argv.dir);
+    //let campaign_text = [];
+    //let campaign_files = [];
 
     // Sleep for 5 seconds after init, before starting send job
     await new Promise(resolve => {
@@ -123,14 +121,20 @@ function typeTime(textLength, CPM) {
 
 function loadCampaignFiles(dir){
     // Iterator to folder.
+    let campaignText = [];
+    let campaignFiles = [];
     fs.readdir(dir, (err, files) => {
 
         files.forEach(file => {
           console.log(`Acquired file: ${file}`);
           var ext = path.extname(file).substring(1);
-          ext == "txt" ? campaign_text.push(file) : campaign_files.push(file);
+          ext == "txt" ? campaignText.push(file) : campaignFiles.push(file);
         });
       });
+    return {
+        "text": campaignText,
+        "files": campaignFiles
+    }
 }
 
 // Reads text from acquired text files array
