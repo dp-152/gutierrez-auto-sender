@@ -22,10 +22,10 @@ let settings = ini.parse(fs.readFileSync(argv.config, encoding='utf-8'));
 // Load send list passed as --send argument
 let sendList = JSON.parse(fs.readFileSync(argv.list, encoding='utf-8'));
 
-// Enumerate send dir text and attachment files from --campaign argument
+// Enumerate send dir text and attachment files from --dir argument
 // Attachment files will be sent in alphabetical order
 // Rename files before sending? meh
-let sendDir = argv.dir
+let sendDir = loadCampaignFiles(argv.dir)
 let campaign_text = []
 let campaign_files = []
 
@@ -124,10 +124,9 @@ function typeTime(textLength, CPM) {
     return Math.trunc(totalTime);
 }
 
-function loadCampaignFiles()
-{
+function loadCampaignFiles(dir){
     // Iterator to folder.
-    fs.readdir(folder, (err, files) => {
+    fs.readdir(dir, (err, files) => {
         files.forEach(file => {
           console.log(file);
           var ext = path.extname(file).substring(1);
