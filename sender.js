@@ -63,6 +63,8 @@ async function massSend(client) {
     let campaign_text = [];
     let campaign_files = [];
 
+
+
     // Sleep for 5 seconds after init, before starting send job
     await new Promise(resolve => {
         setTimeout(resolve, 5000);
@@ -124,9 +126,20 @@ function loadCampaignFiles(dir){
     fs.readdir(dir, (err, files) => {
 
         files.forEach(file => {
-          console.log(file);
+          console.log(`Acquired file: ${file}`);
           var ext = path.extname(file).substring(1);
           ext == "txt" ? campaign_text.push(file) : campaign_files.push(file);
         });
       });
+}
+
+// Reads text from acquired text files array
+function readTextfromFiles(textFiles){
+
+    let result = '';
+    textFiles.forEach(file => {
+        result += FileReader.readAsText(file, 'utf-8');
+    });
+
+    return result.split(/[\n\r]/g)
 }
