@@ -6,28 +6,15 @@ const path = require('path');
 
 /*
     TODO:
-        - Pass JSON send list to venom client DONE
         - Log sends to file
         - client.onMessage listener for send list auto removal
         - Implement message text ONGOING
         - Implement file attachments ONGOING
         - Implement timeouts from config file
-        - Create function to count characters and apply settings file CPM parameter as typing length
-            - Enable variance for typing speed
  */
 
 // Load settings file passed as --config argument
 let settings = ini.parse(fs.readFileSync(argv.config, encoding='utf-8'));
-
-// Load send list passed as --send argument
-let sendList = JSON.parse(fs.readFileSync(argv.list, encoding='utf-8'));
-
-// Enumerate send dir text and attachment files from --dir argument
-// Attachment files will be sent in alphabetical order
-// Rename files before sending? meh
-let sendDir = loadCampaignFiles(argv.dir)
-let campaign_text = []
-let campaign_files = []
 
 // Temporary placeholder for text file/content
 let lipsumText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
@@ -64,20 +51,27 @@ async function massSend(client) {
         - Maybe split text lines?
         - Account for attachments
         - Add logger
-        - Prevent wasting typing time when account is invalid
      */
+
+    // Load send list passed as --send argument
+    let sendList = JSON.parse(fs.readFileSync(argv.list, encoding='utf-8'));
+
+    // Enumerate send dir text and attachment files from --dir argument
+    // Attachment files will be sent in alphabetical order
+    // Rename files before sending? meh
+    let sendDir = loadCampaignFiles(argv.dir);
+    let campaign_text = [];
+    let campaign_files = [];
 
     // Sleep for 5 seconds after init, before starting send job
     await new Promise(resolve => {
         setTimeout(resolve, 5000);
-    })
+    });
 
     console.log("Starting mass send job...");
     // Iterates through contact list from JSON
     for (let contact of sendList.contacts) {
-        // TODO: Account for extra '9' digit - DONE? (profile.id._serialized returns formatted number)
-        // Database may contain numbers either with or without the extra digit
-        // Must account for both cases
+
         let targetID = contact.phone + "@c.us";
 
         // Checks if profile is valid. If not, returns int 404
@@ -88,19 +82,20 @@ async function massSend(client) {
         if (profile !== 404){
             targetID = profile.id._serialized;
 
-            // TODO: ISSUE: Sends typing status only sometimes
+            // TODO: ISSUE: Will send typing status only sometimes
             client.startTyping(targetID).then();
             console.log("Started typing");
+
             await new Promise(resolve => {
-                let typingTime =typeTime(lipsumText.length, settings.timeouts.typing);
+                let typingTime = typeTime(lipsumText.length, settings.timeouts.typing);
                 console.log(`Typing timeout is ${typingTime}`);
                 setTimeout(resolve, typingTime);
             });
-            await client.sendText(targetID, contact.name + " - " + lipsumText);
-            console.log(contact.name + " - " + lipsumText);
+
+            await client.sendText(targetID, `${contact.name} - ${lipsumText}`);
+            console.log(`Typed text: ${contact.name} - ${lipsumText}`);
             client.stopTyping(targetID).then();
             console.log("Stopped typing");
-
 
         }
     }
@@ -127,6 +122,7 @@ function typeTime(textLength, CPM) {
 function loadCampaignFiles(dir){
     // Iterator to folder.
     fs.readdir(dir, (err, files) => {
+
         files.forEach(file => {
           console.log(file);
           var ext = path.extname(file).substring(1);
