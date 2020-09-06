@@ -2,6 +2,7 @@ const venom = require('venom-bot');
 const fs = require('fs');
 const ini = require('ini');
 const {argv} = require('yargs');
+const path = require('path');
 
 /*
     TODO:
@@ -20,10 +21,24 @@ const {argv} = require('yargs');
 
 let settings = ini.parse(fs.readFileSync(argv.config, encoding='utf-8'))
 let sendList = JSON.parse(fs.readFileSync(argv.list, encoding='utf-8'))
+let folder = argv.folder
+let campaign_text = []
+let campaign_files = []
 
 venom.create(settings.instance.name).then((client) => start(client));
 
 function start(client) {
-    console.log(`Instance name = ${settings.instance.name}`)
+    console.log(`Instance name = ${settings.instance.name}`);
+}
 
+function loadCampaignFiles()
+{
+    // Iterator to folder.
+    fs.readdir(folder, (err, files) => {
+        files.forEach(file => {
+          console.log(file);
+          var ext = path.extname(file).substring(1);
+          ext == "txt" ? campaign_text.push(file) : campaign_files.push(file);
+        });
+      });
 }
