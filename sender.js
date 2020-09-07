@@ -107,7 +107,9 @@ async function massSend(client) {
     console.log("Starting mass send job...");
     // Iterates through contact list from JSON
     for (let contact of sendList.contacts) {
-        let targetID = contact.phone + "@c.us"
+        let targetID = contact.phone + "@c.us";
+
+        let targetCounter = 0;
 
         // Checks if profile is valid. If not, returns int 404
         let profile = await client.getNumberProfile(targetID);
@@ -143,17 +145,32 @@ async function massSend(client) {
             }
 
             for (let attachment of campaignContent.files){
-                console.log("Sending attachments")
-                client.sendFile(targetID, attachment, path.basename(attachment));
-                console.log(`Sent ${path.basename(attachment)} as file`);
                 await new Promise(resolve => {
                     console.log(`Attachment timeout is ${settings.timeouts.between_files} seconds - sleeping`);
                     setTimeout(resolve,
                         parseInt(settings.timeouts.between_files) * 1000);
-                })
+                });
+                console.log("Sending attachments");
+                client.sendFile(targetID, attachment, path.basename(attachment));
+                console.log(`Sent ${path.basename(attachment)} as file`);
             }
 
             console.log("Finished sending to contact");
+            if (targetCounter < parseInt(settings.timeouts.sleep_every)){
+                ++targetCounter;
+                await new Promise(resolve => {
+                    console.log(`Waiting ${settings.timeouts.between_targets} before going to next contact`)
+                    setTimeout(resolve, parseInt(settings.timeouts.between_targets));
+                });
+            }
+            else if (targetCounter === parseInt(settings.timeouts.sleep_every)){
+                targetCounter = 0;
+                await new Promise(resolve => {
+                    console.log(`Reached target limit (${settings.timeouts.sleep_every}) - 
+                    Sleeping for ${settings.timeouts.sleep_duration} seconds`);
+                    setTimeout(resolve, parseInt(settings.timeouts.sleep_duration));
+                });
+            }
 
         }
 
