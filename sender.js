@@ -135,6 +135,7 @@ function typeTime(textLength, CPM, variance= 10) {
     // Allows for random variance of up to n%
     // TODO: Set variance percentage as ini parameter
     CPM = parseInt(CPM);
+    variance = parseInt(variance);
     let minCPM = Math.ceil(CPM - ((CPM / 100) * variance));
     let maxCPM = Math.floor(CPM + ((CPM / 100) * variance));
     let randomCPM = Math.floor(Math.random() * (maxCPM - minCPM + 1) + minCPM);
