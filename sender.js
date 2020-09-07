@@ -3,6 +3,37 @@ const fs = require('fs');
 const ini = require('ini');
 const {argv} = require('yargs');
 const path = require('path');
+const { createLogger, format, transports } = require('winston');
+const { combine, timestamp, label, printf } = format;
+
+/*
+------------------------------------------
+--   Logger settings
+------------------------------------------
+- Usage examples
+------------------------------------------
+- Using: logger.log('level','message');
+- logger.info('message');
+- logger.error('message');
+------------------------------------------
+- Custom format to log file
+*/
+const lFormat = printf(({ level, message, timestamp }) => {
+    return `${timestamp} | ${level.toUpperCase()} | ${message}`;
+});
+
+const logger = createLogger({
+    //levels: winston.config.syslog.levels, // uses predefined levels (syslog)
+    format: combine( timestamp({format:'DD/MM/YYYY HH:mm:ss.SSS'}), lFormat), // settings to format logger
+    transports: [
+      new transports.Console({ level: 'error' }), // show in console every error lvl and below
+      // Write a file with everything 'info' level and below
+      new transports.File({
+        filename: 'app.log', // filename
+        level: 'info' // minimum level to start writing into the file
+      })
+    ]
+});
 
 /*
     TODO:
@@ -41,13 +72,12 @@ venom.create(settings.instance.name).then(
         listener(client).then();
 
         // Start mass send job
-        massSend(client).then(() => console.log("Mass send job completed"));
+        //massSend(client).then(() => console.log("Mass send job completed"));
     });
 
 // Listener thread
 // TODO: Implement device health check (battery, service, connection)
 async function listener(client) {
-
     console.log(`Instance name: ${settings.instance.name}`);
     client.onMessage((message => {
         if (message.body === '2'){
