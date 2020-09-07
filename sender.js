@@ -112,10 +112,11 @@ async function massSend(client) {
 
         // Checks if profile is valid. If not, returns int 404
         let profile = await client.getNumberProfile(targetID);
-        logger.log('info',"Retrieved profile data:");
-        logger.log('info',profile);
 
         if (profile !== 404) {
+            logger.log('info',"Retrieved profile data:");
+            logger.log('info',profile);
+            
             targetID = profile.id._serialized;
 
             logger.log('info',`Target: ${contact.name} - ${profile.id.user}`);
