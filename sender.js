@@ -62,15 +62,14 @@ venom.create(settings.instance.name).then(
         listener(client).then();
 
         // Start mass send job
-        //massSend(client).then(() => console.log("Mass send job completed"));
+        massSend(client).then(() => logger.log('info',"Mass send job completed"));
     });
 
 // Listener thread
 // TODO: Implement device health check (battery, service, connection)
 async function listener(client) {
-    console.log(`Instance name: ${settings.instance.name}`);
-    console.log("Running listener for account");
-    logger.info('teste');
+    logger.log('info',`Instance name: ${settings.instance.name}`);
+    logger.log('info',"Running listener for account");
     client.onMessage((message => {
         if (message.body === '2'){
             client.sendText(message.from, "Hi there!");
@@ -104,7 +103,7 @@ async function massSend(client) {
         setTimeout(resolve, 5000);
     });
 
-    console.log("Starting mass send job...");
+    logger.log('info',"Starting mass send job...");
     // Iterates through contact list from JSON
     for (let contact of sendList.contacts) {
         let targetID = contact.phone + "@c.us";
@@ -113,19 +112,19 @@ async function massSend(client) {
 
         // Checks if profile is valid. If not, returns int 404
         let profile = await client.getNumberProfile(targetID);
-        console.log("Retrieved profile data:");
-        console.log(profile);
+        logger.log('info',"Retrieved profile data:");
+        logger.log('info',profile);
 
         if (profile !== 404) {
             targetID = profile.id._serialized;
 
-            console.log(`Target: ${contact.name} - ${profile.id.user}`);
-            console.log("Started sending to contact");
+            logger.log('info',`Target: ${contact.name} - ${profile.id.user}`);
+            logger.log('info',"Started sending to contact");
 
             for (let message of campaignText) {
                 // TODO: ISSUE: Will send typing status only sometimes
                 client.startTyping(targetID).then();
-                console.log("Started typing");
+                logger.log('info',"Started typing");
 
                 await new Promise(resolve => {
                     let typingTime = typeTime(
@@ -133,40 +132,40 @@ async function massSend(client) {
                         settings.timeouts.typing,
                         settings.timeouts.typing_variance
                     );
-                    console.log(`Typing timeout is ${typingTime}ms - sleeping`);
+                    logger.log('info',`Typing timeout is ${typingTime}ms - sleeping`);
                     setTimeout(resolve, typingTime);
                 });
 
                 await client.sendText(targetID, message);
-                console.log(`Typed text: ${message}`);
+                logger.log('info',`Typed text: ${message}`);
 
                 client.stopTyping(targetID).then();
-                console.log("Stopped typing");
+                logger.log('info',"Stopped typing");
             }
 
             for (let attachment of campaignContent.files){
                 await new Promise(resolve => {
-                    console.log(`Attachment timeout is ${settings.timeouts.between_files} seconds - sleeping`);
+                    logger.log('info',`Attachment timeout is ${settings.timeouts.between_files} seconds - sleeping`);
                     setTimeout(resolve,
                         parseInt(settings.timeouts.between_files) * 1000);
                 });
-                console.log("Sending attachments");
+                logger.log('info',"Sending attachments");
                 client.sendFile(targetID, attachment, path.basename(attachment));
-                console.log(`Sent ${path.basename(attachment)} as file`);
+                logger.log('info',`Sent ${path.basename(attachment)} as file`);
             }
 
-            console.log("Finished sending to contact");
+            logger.log('info',"Finished sending to contact");
             if (targetCounter < parseInt(settings.timeouts.sleep_every)){
                 ++targetCounter;
                 await new Promise(resolve => {
-                    console.log(`Waiting ${settings.timeouts.between_targets} before going to next contact`)
+                    logger.log('info',`Waiting ${settings.timeouts.between_targets} before going to next contact`)
                     setTimeout(resolve, parseInt(settings.timeouts.between_targets));
                 });
             }
             else if (targetCounter === parseInt(settings.timeouts.sleep_every)){
                 targetCounter = 0;
                 await new Promise(resolve => {
-                    console.log(`Reached target limit (${settings.timeouts.sleep_every}) - 
+                    logger.log('info',`Reached target limit (${settings.timeouts.sleep_every}) - 
                     Sleeping for ${settings.timeouts.sleep_duration} seconds`);
                     setTimeout(resolve, parseInt(settings.timeouts.sleep_duration));
                 });
@@ -175,7 +174,7 @@ async function massSend(client) {
         }
 
         else {
-            console.log("Invalid or nonexistant contact - skipping");
+            logger.log('info',"Invalid or nonexistant contact - skipping");
         }
     }
 }
@@ -206,7 +205,7 @@ function loadCampaignFiles(dir){
     let files = fs.readdirSync(dir);
 
     files.forEach(file => {
-        console.log(`Acquired file: ${file}`);
+        logger.log('info',`Acquired file: ${file}`);
 
         file = path.resolve(`${dir}\\${file}`);
         let ext = path.extname(file).substring(1);
