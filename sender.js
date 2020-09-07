@@ -64,7 +64,8 @@ async function massSend(client) {
     //let campaign_text = [];
     //let campaign_files = [];
 
-
+    // TODO: Add key to replace with sendlist info (e.g. [[fullname]] => John D.
+    let campaignText = readTextfromFiles(campaignContent.text);
 
     // Sleep for 5 seconds after init, before starting send job
     await new Promise(resolve => {
@@ -74,8 +75,7 @@ async function massSend(client) {
     console.log("Starting mass send job...");
     // Iterates through contact list from JSON
     for (let contact of sendList.contacts) {
-
-        let targetID = contact.phone + "@c.us";
+        let targetID = contact.phone + "@c.us"
 
         // Checks if profile is valid. If not, returns int 404
         let profile = await client.getNumberProfile(targetID);
@@ -85,20 +85,28 @@ async function massSend(client) {
         if (profile !== 404){
             targetID = profile.id._serialized;
 
-            // TODO: ISSUE: Will send typing status only sometimes
-            client.startTyping(targetID).then();
-            console.log("Started typing");
+            console.log(`Target: ${contact.name} - ${profile.id.user}`);
+            console.log("Started sending to contact");
 
-            await new Promise(resolve => {
-                let typingTime = typeTime(lipsumText.length, settings.timeouts.typing);
-                console.log(`Typing timeout is ${typingTime}`);
-                setTimeout(resolve, typingTime);
-            });
+            for (let message of campaignText) {
+                // TODO: ISSUE: Will send typing status only sometimes
+                client.startTyping(targetID).then();
+                console.log("Started typing");
 
-            await client.sendText(targetID, `${contact.name} - ${lipsumText}`);
-            console.log(`Typed text: ${contact.name} - ${lipsumText}`);
-            client.stopTyping(targetID).then();
-            console.log("Stopped typing");
+                await new Promise(resolve => {
+                    let typingTime = typeTime(message.length, settings.timeouts.typing);
+                    console.log(`Typing timeout is ${typingTime}`);
+                    setTimeout(resolve, typingTime);
+                });
+
+                await client.sendText(targetID, `${message}`);
+                console.log(`Typed text: ${message}`);
+
+                client.stopTyping(targetID).then();
+                console.log("Stopped typing");
+            }
+
+            console.log("Finished sending to contact");
 
         }
     }
@@ -124,19 +132,21 @@ function typeTime(textLength, CPM) {
 
 function loadCampaignFiles(dir){
     // Iterator to folder.
-    let campaignText = [];
-    let campaignFiles = [];
+    let text = [];
+    let attachments = [];
     let files = fs.readdirSync(dir);
 
     files.forEach(file => {
         console.log(`Acquired file: ${file}`);
-        var ext = path.extname(file).substring(1);
-        ext == "txt" ? campaignText.push(file) : campaignFiles.push(file);
+
+        file = path.resolve(`${dir}\\${file}`);
+        let ext = path.extname(file).substring(1);
+        ext == "txt" ? text.push(file) : attachments.push(file);
     });
 
     return {
-        "text": campaignText,
-        "files": campaignFiles
+        "text": text,
+        "files": attachments
     }
 }
 
@@ -145,8 +155,11 @@ function readTextfromFiles(textFiles){
 
     let result = '';
     textFiles.forEach(file => {
-        result += FileReader.readAsText(file, 'utf-8');
+        result += fs.readFileSync(file, 'utf-8');
+        result += '\n'
     });
 
-    return result.split(/[\n\r]/g)
+    return result.split(/[\r\n]/g).filter((el) => {
+        return el !== "";
+    });
 }
