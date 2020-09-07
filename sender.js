@@ -115,8 +115,8 @@ async function massSend(client) {
 
         if (profile !== 404) {
             logger.log('info',"Retrieved profile data:");
-            logger.log('info',profile);
-            
+            logger.log('info',profile.id.user);
+
             targetID = profile.id._serialized;
 
             logger.log('info',`Target: ${contact.name} - ${profile.id.user}`);
