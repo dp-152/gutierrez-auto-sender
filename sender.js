@@ -5,6 +5,7 @@ const {argv} = require('yargs');
 const path = require('path');
 const { createLogger, format, transports } = require('winston');
 const { combine, timestamp, label, printf } = format;
+const { ReportLog } = require('./reportlog');
 
 /*
     TODO:
@@ -50,8 +51,6 @@ const logger = createLogger({
       })
     ]
 });
-
-
 
 // Initialize Venom instance - instance name inherited from ini file [instance] name = string
 // TODO: Get login status of account
@@ -102,6 +101,12 @@ async function massSend(client) {
     await new Promise(resolve => {
         setTimeout(resolve, 5000);
     });
+
+    // Campaign Report Log ;
+    let finalReport = new ReportLog('reports/Report_'+Date.now()+'.json');
+    var success = 0;
+    var failed = 0;
+    var total = 0;
 
     logger.log('info',"Starting mass send job...");
     // Iterates through contact list from JSON
@@ -156,6 +161,11 @@ async function massSend(client) {
             }
 
             logger.log('info',"Finished sending to contact");
+            
+            /** ReportLog */
+            finalReport.pushLog(targetID, true, "");
+            success++;
+
             if (targetCounter < parseInt(settings.timeouts.sleep_every)){
                 ++targetCounter;
                 await new Promise(resolve => {
@@ -176,8 +186,16 @@ async function massSend(client) {
 
         else {
             logger.log('info',"Invalid or nonexistant contact - skipping");
+
+            /** ReportLog */
+            failed++;
+            finalReport.pushLog(targetID,false,"Invalid or nonexistant contact");
         }
+        total++;
     }
+
+    /** ReportLog */
+    finalReport.create(); // Create the JSON File with Report Log.
 }
 
 // Function for setting wait time to simulate human typing
