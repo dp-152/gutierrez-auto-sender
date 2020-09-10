@@ -243,8 +243,9 @@ function readTextfromFiles(textFiles){
 function replaceKeys(str, object, delimiter = ["{{", "}}"]){
 
     let regexp = new RegExp(`${delimiter[0]}(.*?)${delimiter[1]}`, 'g');
+    let matches = [...str.matchAll(regexp)];
 
-    while (key = regexp.exec(str)) {
+    for (let key of matches) {
         if(key[1] in object){
             str = str.replace(key[0], object[key[1]]);
         }
