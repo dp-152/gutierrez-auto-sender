@@ -166,7 +166,7 @@ async function massSend(client) {
                 ++targetCounter;
                 await new Promise(resolve => {
                     logger.log('info',`Waiting ${settings.timeouts.between_targets} before going to next contact`)
-                    setTimeout(resolve, parseInt(settings.timeouts.between_targets));
+                    setTimeout(resolve, parseInt(settings.timeouts.between_targets) * 1000);
                 });
             }
             else if (targetCounter === parseInt(settings.timeouts.sleep_every)){
@@ -174,7 +174,7 @@ async function massSend(client) {
                 await new Promise(resolve => {
                     logger.log('info',`Reached target limit (${settings.timeouts.sleep_every}) - 
                     Sleeping for ${settings.timeouts.sleep_duration} seconds`);
-                    setTimeout(resolve, parseInt(settings.timeouts.sleep_duration));
+                    setTimeout(resolve, parseInt(settings.timeouts.sleep_duration) * 1000);
                 });
             }
 
