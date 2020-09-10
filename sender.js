@@ -93,8 +93,11 @@ async function massSend(client) {
     });
 
     // Campaign Report Log ;
-    var logpath = argv.dir + '/logs/Report_'+Date.now()+'.csv';
-    let finalReport = new ReportLog(logpath);
+    let logDate = getDateString(
+        new Date(),
+        "{{year}}-{{month}}-{{day}}_{{hour}}-{{minutes}}-{{seconds}}.{{milliseconds}}");
+    var logPath = argv.dir + `/logs/Report_${settings.instance.name}_${logDate}.csv`;
+    let finalReport = new ReportLog(logPath);
 
     logger.log('info',"Starting mass send job...");
     // Iterates through contact list from JSON
