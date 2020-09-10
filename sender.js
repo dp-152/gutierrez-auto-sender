@@ -80,10 +80,6 @@ async function listener(client) {
 // Mass sender thread
 async function massSend(client) {
 
-    /* TODO:
-        - Add logger
-     */
-
     // Load send list passed as --send argument
     let sendList = JSON.parse(fs.readFileSync(argv.list, encoding='utf-8'));
 
@@ -218,8 +214,9 @@ function loadCampaignFiles(dir){
     // Iterator to folder.
     let text = [];
     let attachments = [];
-    let files = fs.readdirSync(dir);
-
+    // filter file from dir and ignore them
+    let files = fs.readdirSync(dir,{withFileTypes: true}).filter(item => !item.isDirectory()).map(item => item.name);
+    
     files.forEach(file => {
         logger.log('info',`Acquired file: ${file}`);
 
