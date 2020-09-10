@@ -9,11 +9,7 @@ const { ReportLog } = require('./reportlog');
 
 /*
     TODO:
-        - Log sends to file
         - client.onMessage listener for send list auto removal
-        - Implement message text ONGOING
-        - Implement file attachments ONGOING
-        - Implement timeouts from config file
  */
 
 // Load settings file passed as --config argument
@@ -195,7 +191,6 @@ async function massSend(client) {
 // Returns wait time in milliseconds
 function typeTime(textLength, CPM, variance= 10) {
     // Allows for random variance of up to n%
-    // TODO: Set variance percentage as ini parameter
     CPM = parseInt(CPM);
     variance = parseInt(variance);
     let minCPM = Math.ceil(CPM - ((CPM / 100) * variance));
