@@ -160,7 +160,7 @@ async function massSend(client) {
              * @param {string}  targetID    Phone number
              * @param {bool}    status      Sent status
             */
-            finalReport.pushLog(targetID, true);
+            finalReport.pushLog(contact.phone, true);
 
             if (targetCounter < parseInt(settings.timeouts.sleep_every)){
                 ++targetCounter;
@@ -184,7 +184,7 @@ async function massSend(client) {
             logger.log('info',"Invalid or nonexistant contact - skipping");
 
             /** ReportLog */
-            finalReport.pushLog(targetID,false);
+            finalReport.pushLog(contact.phone,false);
         }
     }
 }
