@@ -93,7 +93,6 @@ async function massSend(client) {
     // Rename files before sending? meh
     let campaignContent = loadCampaignFiles(argv.dir);
 
-    // TODO: Add key to replace with sendlist info (e.g. [[fullname]] => John D).
     // TODO: Add option to send links with preview
     // TODO: Add option to send contacts
     let campaignText = readTextfromFiles(campaignContent.text);
@@ -123,7 +122,9 @@ async function massSend(client) {
             logger.log('info',"Started sending to contact");
 
             for (let message of campaignText) {
-                // TODO: ISSUE: Will send typing status only sometimes
+
+                message = replaceKeys(message, contact);
+
                 client.startTyping(targetID).then();
                 logger.log('info',"Started typing");
 
@@ -231,4 +232,18 @@ function readTextfromFiles(textFiles){
     return result.split(/[\r\n]/g).filter((el) => {
         return el !== "";
     });
+}
+
+// Replaces known keys within the text with their appropriate equivalents
+function replaceKeys(str, object, delimiter = ["{{", "}}"]){
+
+    let regexp = new RegExp(`${delimiter[0]}(.*?)${delimiter[1]}`, 'g');
+
+    while (key = regexp.exec(str)) {
+        if(key[1] in object){
+            str = str.replace(key[0], object[key[1]]);
+        }
+    }
+
+    return str;
 }
