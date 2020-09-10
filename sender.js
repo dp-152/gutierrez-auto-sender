@@ -144,7 +144,8 @@ async function massSend(client) {
 
             for (let attachment of campaignContent.files){
                 await new Promise(resolve => {
-                    logger.log('info',`Attachment timeout is ${settings.timeouts.between_files} seconds - sleeping`);
+                    logger.log('info',
+                        `Attachment timeout is ${settings.timeouts.between_files} seconds - sleeping`);
                     setTimeout(resolve,
                         parseInt(settings.timeouts.between_files) * 1000);
                 });
@@ -165,7 +166,8 @@ async function massSend(client) {
             if (targetCounter < parseInt(settings.timeouts.sleep_every)){
                 ++targetCounter;
                 await new Promise(resolve => {
-                    logger.log('info',`Waiting ${settings.timeouts.between_targets} before going to next contact`)
+                    logger.log('info',
+                        `Waiting ${settings.timeouts.between_targets} seconds before going to next contact`)
                     setTimeout(resolve, parseInt(settings.timeouts.between_targets) * 1000);
                 });
             }
