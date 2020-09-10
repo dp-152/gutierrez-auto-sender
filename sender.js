@@ -5,6 +5,7 @@ const {argv} = require('yargs');
 const path = require('path');
 const { createLogger, format, transports } = require('winston');
 const { combine, timestamp, label, printf } = format;
+const { ReportLog } = require('./reportlog');
 
 /*
     TODO:
@@ -50,8 +51,6 @@ const logger = createLogger({
       })
     ]
 });
-
-
 
 // Initialize Venom instance - instance name inherited from ini file [instance] name = string
 // TODO: Get login status of account
@@ -101,6 +100,10 @@ async function massSend(client) {
     await new Promise(resolve => {
         setTimeout(resolve, 5000);
     });
+
+    // Campaign Report Log ;
+    var logpath = argv.dir + '/logs/Report_'+Date.now()+'.csv';
+    let finalReport = new ReportLog(logpath);
 
     logger.log('info',"Starting mass send job...");
     // Iterates through contact list from JSON
@@ -157,6 +160,14 @@ async function massSend(client) {
             }
 
             logger.log('info',"Finished sending to contact");
+            logger.log('info',"Writing data in log.");
+            
+            /** ReportLog
+             * @param {string}  targetID    Phone number
+             * @param {bool}    status      Sent status
+            */
+            finalReport.pushLog(targetID, true);
+
             if (targetCounter < parseInt(settings.timeouts.sleep_every)){
                 ++targetCounter;
                 await new Promise(resolve => {
@@ -177,6 +188,9 @@ async function massSend(client) {
 
         else {
             logger.log('info',"Invalid or nonexistant contact - skipping");
+
+            /** ReportLog */
+            finalReport.pushLog(targetID,false);
         }
     }
 }
