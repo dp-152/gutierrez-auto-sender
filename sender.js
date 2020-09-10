@@ -18,7 +18,6 @@ let settings = ini.parse(fs.readFileSync(argv.config, encoding='utf-8'));
 // Temporary placeholder for text file/content
 let lipsumText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
 
-
 /*
 ------------------------------------------
 --   Logger settings
@@ -252,4 +251,21 @@ function replaceKeys(str, object, delimiter = ["{{", "}}"]){
     }
 
     return str;
+}
+
+// Create string based on date, formatted according to keys string
+// Accepted keys - {{year}}, {{month}}, {{day}}, {{hour}}, {{minutes}}, {{seconds}}, {{milliseconds}}
+function getDateString(date, formatKeys) {
+    const dateObject = {
+        year: date.getFullYear(),
+        month: `${date.getMonth() + 1}`.padStart(2, '0'),
+        day: `${date.getDate()}`.padStart(2, '0'),
+        hour: `${date.getHours()}`.padStart(2, '0'),
+        minutes: `${date.getMinutes()}`.padStart(2, '0'),
+        seconds: `${date.getSeconds()}`.padStart(2, '0'),
+        milliseconds: `${date.getMilliseconds()}`.padStart(3, '0')
+    }
+
+    return replaceKeys(formatKeys, dateObject);
+
 }
