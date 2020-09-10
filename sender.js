@@ -232,3 +232,17 @@ function readTextfromFiles(textFiles){
         return el !== "";
     });
 }
+
+// Replaces known keys within the text with their appropriate equivalents
+function replaceKeys(str, object, delimiter = ["{{", "}}"]){
+
+    let regexp = new RegExp(`${delimiter[0]}(.*?)${delimiter[1]}`, 'g');
+
+    while (key = regexp.exec(str)) {
+        if(key[1] in object){
+            str = str.replace(key[0], object[key[1]]);
+        }
+    }
+
+    return str;
+}
