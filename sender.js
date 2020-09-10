@@ -103,10 +103,8 @@ async function massSend(client) {
     });
 
     // Campaign Report Log ;
-    let finalReport = new ReportLog('reports/Report_'+Date.now()+'.json');
-    var success = 0;
-    var failed = 0;
-    var total = 0;
+    var logpath = argv.dir + '/logs/Report_'+Date.now()+'.csv';
+    let finalReport = new ReportLog(logpath);
 
     logger.log('info',"Starting mass send job...");
     // Iterates through contact list from JSON
@@ -161,10 +159,13 @@ async function massSend(client) {
             }
 
             logger.log('info',"Finished sending to contact");
+            logger.log('info',"Writing data in log.");
             
-            /** ReportLog */
-            finalReport.pushLog(targetID, true, "");
-            success++;
+            /** ReportLog
+             * @param {string}  targetID    Phone number
+             * @param {bool}    status      Sent status
+            */
+            finalReport.pushLog(targetID, true);
 
             if (targetCounter < parseInt(settings.timeouts.sleep_every)){
                 ++targetCounter;
@@ -188,14 +189,9 @@ async function massSend(client) {
             logger.log('info',"Invalid or nonexistant contact - skipping");
 
             /** ReportLog */
-            failed++;
-            finalReport.pushLog(targetID,false,"Invalid or nonexistant contact");
+            finalReport.pushLog(targetID,false);
         }
-        total++;
     }
-
-    /** ReportLog */
-    finalReport.create(); // Create the JSON File with Report Log.
 }
 
 // Function for setting wait time to simulate human typing
