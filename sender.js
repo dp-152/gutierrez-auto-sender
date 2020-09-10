@@ -5,7 +5,7 @@ const {argv} = require('yargs');
 const path = require('path');
 const { createLogger, format, transports } = require('winston');
 const { combine, timestamp, label, printf } = format;
-const { ReportLog } = require('./reportlog');
+const { ReportLog } = require('./sys/reportlog');
 const {typeTime, loadCampaignFiles, readTextfromFiles, replaceKeys, getDateString} = require('./sys/helper');
 
 /*
