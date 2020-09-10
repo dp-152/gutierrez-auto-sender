@@ -18,7 +18,6 @@ let settings = ini.parse(fs.readFileSync(argv.config, encoding='utf-8'));
 // Temporary placeholder for text file/content
 let lipsumText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
 
-
 /*
 ------------------------------------------
 --   Logger settings
@@ -94,8 +93,11 @@ async function massSend(client) {
     });
 
     // Campaign Report Log ;
-    var logpath = argv.dir + '/logs/Report_'+Date.now()+'.csv';
-    let finalReport = new ReportLog(logpath);
+    let logDate = getDateString(
+        new Date(),
+        "{{year}}-{{month}}-{{day}}_{{hour}}-{{minutes}}-{{seconds}}.{{milliseconds}}");
+    var logPath = argv.dir + `/logs/Report_${settings.instance.name}_${logDate}.csv`;
+    let finalReport = new ReportLog(logPath);
 
     logger.log('info',"Starting mass send job...");
     // Iterates through contact list from JSON
@@ -158,7 +160,7 @@ async function massSend(client) {
              * @param {string}  targetID    Phone number
              * @param {bool}    status      Sent status
             */
-            finalReport.pushLog(targetID, true);
+            finalReport.pushLog(contact.phone, true);
 
             if (targetCounter < parseInt(settings.timeouts.sleep_every)){
                 ++targetCounter;
@@ -182,7 +184,7 @@ async function massSend(client) {
             logger.log('info',"Invalid or nonexistant contact - skipping");
 
             /** ReportLog */
-            finalReport.pushLog(targetID,false);
+            finalReport.pushLog(contact.phone,false);
         }
     }
 }
@@ -244,12 +246,30 @@ function readTextfromFiles(textFiles){
 function replaceKeys(str, object, delimiter = ["{{", "}}"]){
 
     let regexp = new RegExp(`${delimiter[0]}(.*?)${delimiter[1]}`, 'g');
+    let matches = [...str.matchAll(regexp)];
 
-    while (key = regexp.exec(str)) {
+    for (let key of matches) {
         if(key[1] in object){
             str = str.replace(key[0], object[key[1]]);
         }
     }
 
     return str;
+}
+
+// Create string based on date, formatted according to keys string
+// Accepted keys - {{year}}, {{month}}, {{day}}, {{hour}}, {{minutes}}, {{seconds}}, {{milliseconds}}
+function getDateString(date, formatKeys) {
+    const dateObject = {
+        year: date.getFullYear(),
+        month: `${date.getMonth() + 1}`.padStart(2, '0'),
+        day: `${date.getDate()}`.padStart(2, '0'),
+        hour: `${date.getHours()}`.padStart(2, '0'),
+        minutes: `${date.getMinutes()}`.padStart(2, '0'),
+        seconds: `${date.getSeconds()}`.padStart(2, '0'),
+        milliseconds: `${date.getMilliseconds()}`.padStart(3, '0')
+    }
+
+    return replaceKeys(formatKeys, dateObject);
+
 }
