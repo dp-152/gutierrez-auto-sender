@@ -99,19 +99,29 @@ async function massSend(client) {
     logger.info("Initializing Mass Sender Thread...")
 
     // Load send list passed as --send argument
-    let sendList = JSON.parse(fs.readFileSync(argv.list, encoding='utf-8'));
+    const sendList = JSON.parse(fs.readFileSync(argv.list, encoding='utf-8'));
 
-    logger.info(`Campaign name is: ${path.dirname(argv.dir).split(path.sep()).pop()}`);
+    logger.info(`Campaign name is: ${path.dirname(argv.dir)}`);
+
+    // Load timeouts
+    const timeouts = {
+        typingWPM: parseInt(settings.timeouts.typing),
+        typingVariance: parseInt(settings.timeouts.typing_variance),
+        betweenFiles: parseInt(settings.timeouts.between_files),
+        betweenTargets: parseInt(settings.timeouts.between_targets),
+        sleepEvery: parseInt(settings.timeouts.sleep_every),
+        sleepDuration: parseInt(settings.timeouts.sleep_duration)
+    }
 
     // Enumerates send dir text and attachment files from --dir argument
     // Attachment files will be sent in alphabetical order
     logger.info("Probing campaign dir for text files and attachments...")
-    let campaignContent = loadCampaignFiles(argv.dir);
+    const campaignContent = loadCampaignFiles(argv.dir);
 
     // TODO: Add option to send links with preview
     // TODO: Add option to send contacts
     logger.info("Loading campaing text...")
-    let campaignText = readTextfromFiles(campaignContent.text);
+    const campaignText = readTextfromFiles(campaignContent.text);
     logger.info("Text loaded")
 
     // Sleep for 5 seconds after init, before starting send job
@@ -158,8 +168,8 @@ async function massSend(client) {
                 await new Promise(resolve => {
                     let typingTime = typeTime(
                         message.length,
-                        settings.timeouts.typing,
-                        settings.timeouts.typing_variance
+                        timeouts.typingWPM,
+                        timeouts.typingVariance
                     );
                     logger.info(`Typing timeout is ${typingTime}ms - sleeping`);
                     setTimeout(resolve, typingTime);
@@ -175,9 +185,9 @@ async function massSend(client) {
             for (let attachment of campaignContent.files){
                 await new Promise(resolve => {
                     logger.info(
-                        `Attachment timeout is ${settings.timeouts.between_files} seconds - sleeping`);
+                        `Attachment timeout is ${betweenFiles} seconds - sleeping`);
                     setTimeout(resolve,
-                        parseInt(settings.timeouts.between_files) * 1000);
+                        betweenFiles * 1000);
                 });
                 logger.info("Sending attachment:");
                 client.sendFile(targetID, attachment, path.basename(attachment));
@@ -193,20 +203,20 @@ async function massSend(client) {
             */
             finalReport.pushLog(contact.phone, true);
 
-            if (targetCounter < parseInt(settings.timeouts.sleep_every)){
+            if (targetCounter < timeouts.sleepEvery){
                 ++targetCounter;
                 await new Promise(resolve => {
                     logger.info(
-                        `Waiting ${settings.timeouts.between_targets} seconds before going to next contact`)
-                    setTimeout(resolve, parseInt(settings.timeouts.between_targets) * 1000);
+                        `Waiting ${sleepDuration} seconds before going to next contact`)
+                    setTimeout(resolve, timeouts.betweenTargets * 1000);
                 });
             }
-            else if (targetCounter === parseInt(settings.timeouts.sleep_every)){
+            else if (targetCounter === timeouts.sleepEvery){
                 targetCounter = 0;
                 await new Promise(resolve => {
-                    logger.info(`Reached target limit (${settings.timeouts.sleep_every}) - ` +
-                    `Sleeping for ${settings.timeouts.sleep_duration} seconds`);
-                    setTimeout(resolve, parseInt(settings.timeouts.sleep_duration) * 1000);
+                    logger.info(`Reached target limit (${timeouts.sleepEvery}) - ` +
+                    `Sleeping for ${timeouts.sleepDuration} seconds`);
+                    setTimeout(resolve, timeouts.sleepDuration * 1000);
                 });
             }
 
