@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const {logger} = require('./logger');
 
 class ReportLog {
 
@@ -36,7 +37,7 @@ class ReportLog {
             try {
                 fs.appendFileSync(this.filepath, (csvdata + newline));
             } catch (err) {
-                console.log(err);
+                logger.error(__filename + " - " + err);
             }
         } else {
             // file doesn't exists
@@ -51,7 +52,7 @@ class ReportLog {
             try {
                 fs.writeFileSync(this.filepath, (csvcolumns + csvdata + newline));
             } catch (err) {
-                console.log(err);
+                logger.error(__filename + " - " + err);
             }
         }
 
