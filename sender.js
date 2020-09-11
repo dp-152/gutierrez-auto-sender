@@ -113,6 +113,8 @@ async function massSend(client) {
         sleepDuration: parseInt(settings.timeouts.sleep_duration)
     }
 
+    let targetCounter = 0;
+
     // Enumerates send dir text and attachment files from --dir argument
     // Attachment files will be sent in alphabetical order
     logger.info("Probing campaign dir for text files and attachments...")
@@ -142,8 +144,6 @@ async function massSend(client) {
     // Iterates through contact list from JSON
     for (let contact of sendList.contacts) {
         let targetID = contact.phone + "@c.us";
-
-        let targetCounter = 0;
 
         // Checks if profile is valid. If not, returns int 404
         let profile = await client.getNumberProfile(targetID);
@@ -185,9 +185,9 @@ async function massSend(client) {
             for (let attachment of campaignContent.files){
                 await new Promise(resolve => {
                     logger.info(
-                        `Attachment timeout is ${betweenFiles} seconds - sleeping`);
+                        `Attachment timeout is ${timeouts.betweenFiles} seconds - sleeping`);
                     setTimeout(resolve,
-                        betweenFiles * 1000);
+                        timeouts.betweenFiles * 1000);
                 });
                 logger.info("Sending attachment:");
                 client.sendFile(targetID, attachment, path.basename(attachment));
@@ -205,9 +205,10 @@ async function massSend(client) {
 
             if (targetCounter < timeouts.sleepEvery){
                 ++targetCounter;
+                logger.info(`Current target count is ${targetCounter}, up to a max of ${timeouts.sleepEvery}`)
                 await new Promise(resolve => {
                     logger.info(
-                        `Waiting ${sleepDuration} seconds before going to next contact`)
+                        `Waiting ${timeouts.betweenTargets} seconds before going to next contact`)
                     setTimeout(resolve, timeouts.betweenTargets * 1000);
                 });
             }
