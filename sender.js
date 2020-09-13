@@ -15,28 +15,7 @@ const {typeTime, loadCampaignFiles, readTextfromFiles, replaceKeys, getDateStrin
 // Load settings file passed as --config argument
 let settings = ini.parse(fs.readFileSync(argv.config, encoding='utf-8'));
 
-logger.info(`${getDateString(new Date(),"{{year}}/{{month}}/{{day}} - {{hour}}:{{minutes}}")} - Initializing server...`)
-
-logger.info("\n" +
-    "#########################################################################\n"+
-    "#########################################################################\n"+
-    "####    ▗▄ ▄ ▄  ▄▄▄ ▄   ▄▄▄  ▗▄▄▖▗▄▖ ▗▄▖▄▄▄▖                           \n" +
-    "####     █▟█▙█  █▄▄ █   █    █ ▐█ █ █ █ █▄▄                           \n" +
-    "####     ▐█ █▌  █▄▄ ███ ▜▄▛▘ ▜▙▟▀ █   █ █▄▄▖                           \n" +
-    "####                                                          \n" +
-    "####    ▄▄▄▖       ▄▄▄▄▄▄▄▄▄▄▄▟▌▀▖     ▗▄▄▖                        \n" +
-    "####    ▝▄ ▐▖     ▟▘▐         ▐▌ ▝▙    ▐  ▌ ▄▞▀▀▀▀▀▄▖ ▛▀▄        ▄▘▌\n" +
-    "####     ▝▄ ▐▖   ▐▘ ▟▖ ▜▀▀▀▀▀▌▐▖  ▝▚▖  ▐  ▙▞▘▗▞▀▀▀▚▖▝▙▛ ▝▜▖    ▗▀  ▌\n" +
-    "####      ▀▖ ▜  ▗▘ ▟█  ▜     ▝▐▌ ▟▖ ▜▖ ▐  █ ▟▘     ▐▖▝█   ▝▙▖▗▞▘   ▌\n" +
-    "####       ▜▖ ▜▄▛ ▐▜▝  ▝ ▘▜   ▝▌ ▟▀▖ ▝▙▐  ▌▗▌       ▜ ▙ ▐▙▖ ▀▘ ▗▟▘ ▌\n" +
-    "####        ▚▖ ▀ ▗▌▝▜▖ ▜▀▀▀   ▐▌ ▟ ▝▙  ▜  ▙ ▙       ▛ ▙ ▐▌▝▄  ▟▀▐▘ ▌\n" +
-    "####         ▚▖ ▗▛  ▐▖ ▜    ▗▛▜▌ ▟   ▚▖   █▖▝▙▖   ▗▛ ▟▛ ▐▖  ▀▞  ▐▖ ▌\n" +
-    "####         ▝▚▗▛   ▐   ▘▘▘▘▘ ▐▌ ▟    ▀▄  ▌▝▙▖▝▀▀▀▘▗▞▘▛ ▐▌      ▐  ▌\n" +
-    "####          ▝▛    ▝▀▝▘▘▘▘▘▘▀▝▘▘▀     ▝▙ ▌  ▝▀▘▘▀▀▘  ▀▘▀       ▝▀▝▘\n" +
-    "####                                     ▚▌\n" +
-    "####                                       \n"+
-    "#########################################################################\n"+
-    "#########################################################################\n")
+logger.info('Initializing server...');
 
 // Initialize Venom instance - instance name inherited from ini file [instance] name = string
 // TODO: Get login status of account
