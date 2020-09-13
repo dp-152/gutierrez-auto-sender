@@ -47,7 +47,7 @@ venom.create(settings.instance.name).then(
         listener(client).then();
 
         // Start mass send job
-        //massSend(client).then(() => logger.log('info',"Mass send job completed"));
+        massSend(client).then(() => logger.log('info',"Mass send job completed"));
     });
 
 // Listener thread
