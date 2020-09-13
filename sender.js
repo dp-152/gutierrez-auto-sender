@@ -44,10 +44,13 @@ logger.info("\n" +
 venom.create(settings.instance.name).then(
     (client) => {
         // Start listener thread
-        listener(client).then();
+        listener(client).then().catch((err) => { logger.error('Error trying to start a listener thread.'); logger.error(err);});
 
         // Start mass send job
-        massSend(client).then(() => logger.log('info',"Mass send job completed"));
+        massSend(client).then(() => logger.log('info',"Mass send job completed")).catch((err) => { logger.error('Error trying to start a Mass Send Job.'); logger.error(err);});
+    }).catch((err) => {
+        logger.error('Error trying to start a Venom Instance.');
+        logger.error(err);
     });
 
 // Listener thread
@@ -57,7 +60,7 @@ async function listener(client) {
     logger.log('info',"Running listener for account");
     client.onMessage((message => {
         if (message.body === '2'){
-            client.sendText(message.from, "Hi there!");
+            client.sendText(message.from, "Hi there!").catch((err) => { logger.error('Error sending a reply.'); logger.error(err);});
         }
     }));
 
@@ -116,7 +119,7 @@ async function massSend(client) {
         let targetID = contact.phone + "@c.us";
 
         // Checks if profile is valid. If not, returns int 404
-        let profile = await client.getNumberProfile(targetID);
+        let profile = await client.getNumberProfile(targetID).catch((err) => { logger.error('Error getting profile number.'); logger.error(err);});
 
         if (profile !== 404) {
             logger.info(`Retrieved profile data:    - Account: ${profile.id.user}
@@ -132,7 +135,7 @@ async function massSend(client) {
 
                 message = replaceKeys(message, contact);
 
-                client.startTyping(targetID).then();
+                client.startTyping(targetID).then().catch((err) => { logger.error('Error trying to start typing.'); logger.error(err);});
                 logger.info("Started typing");
 
                 await new Promise(resolve => {
@@ -145,10 +148,10 @@ async function massSend(client) {
                     setTimeout(resolve, typingTime);
                 });
 
-                await client.sendText(targetID, message);
+                await client.sendText(targetID, message).catch((err) => { logger.error('Error sending message.'); logger.error(err);});
                 logger.info(`Typed text: ${message}`);
 
-                client.stopTyping(targetID).then();
+                client.stopTyping(targetID).then().catch((err) => { logger.error('Error trying to stop typing.'); logger.error(err);});
                 logger.info("Stopped typing");
             }
 
@@ -160,7 +163,7 @@ async function massSend(client) {
                         timeouts.betweenFiles * 1000);
                 });
                 logger.info("Sending attachment:");
-                client.sendFile(targetID, attachment, path.basename(attachment));
+                client.sendFile(targetID, attachment, path.basename(attachment)).catch((err) => { logger.error('Error trying to send file.'); logger.error(err);});
                 logger.info(`Sent ${path.basename(attachment)} as file`);
             }
 
