@@ -1,10 +1,11 @@
 const venom = require('venom-bot');
 const fs = require('fs');
-const ini = require('ini');
-const {argv} = require('yargs');
+const { argv } = require('yargs');
+const {ini_init} = require('./sys/ini');
 const path = require('path');
 const {logger} = require('./sys/logger');
 const { ReportLog } = require('./sys/reportlog');
+const inifile = require('./sys/ini');
 const {typeTime, loadCampaignFiles, readTextfromFiles, replaceKeys, getDateString} = require('./sys/helper');
 
 /*
@@ -13,7 +14,8 @@ const {typeTime, loadCampaignFiles, readTextfromFiles, replaceKeys, getDateStrin
  */
 
 // Load settings file passed as --config argument
-let settings = ini.parse(fs.readFileSync(argv.config, encoding='utf-8'));
+
+let settings = ini_init();
 
 logger.info(`${getDateString(new Date(),"{{year}}/{{month}}/{{day}} - {{hour}}:{{minutes}}")} - Initializing server...`)
 
