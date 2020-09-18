@@ -5,13 +5,8 @@ const {logger} = require('./logger');
 // Function for setting wait time to simulate human typing
 // Returns wait time in milliseconds
 function typeTime(textLength, CPM, variance= 10) {
-    // Allows for random variance of up to n%
-    CPM = parseInt(CPM);
-    variance = parseInt(variance);
-    let minCPM = Math.ceil(CPM - ((CPM / 100) * variance));
-    let maxCPM = Math.floor(CPM + ((CPM / 100) * variance));
-    let randomCPM = Math.floor(Math.random() * (maxCPM - minCPM + 1) + minCPM);
-
+    // Uses percentual variation function to return random CPM value
+    const randomCPM = percentualVariation(CPM, variance);
     // Use CPM to get seconds per character, then multiply by length of text
     let SPC = 60 / randomCPM;
     // Time in seconds * 1000 to get milliseconds
@@ -87,4 +82,12 @@ function getDateString(date, formatKeys) {
 
 }
 
-module.exports = {typeTime, loadCampaignFiles, readTextfromFiles, replaceKeys, getDateString}
+// Generates a random number between a percentual variation threshold (above and below) the base value
+// Takes an int as base value and an int corresponding to the percentual variation to be applied
+function percentualVariation(baseValue, variance){
+    const min = Math.ceil(baseValue - ((baseValue / 100) * variance));
+    const max = Math.floor(baseValue + ((baseValue / 100) * variance));
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+module.exports = {typeTime, loadCampaignFiles, readTextfromFiles, replaceKeys, getDateString, percentualVariation}
