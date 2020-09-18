@@ -144,11 +144,12 @@ async function massSend(client) {
             }
 
             for (let attachment of campaignContent.files){
+                const randomBetweenFiles = percentualVariation(timeouts.betweenFiles, timeouts.typingVariance)
                 await new Promise(resolve => {
                     logger.info(
-                        `Attachment timeout is ${timeouts.betweenFiles} seconds - sleeping`);
+                        `Attachment timeout is ${randomBetweenFiles} seconds - sleeping`);
                     setTimeout(resolve,
-                        timeouts.betweenFiles * 1000);
+                        randomBetweenFiles * 1000);
                 });
                 logger.info("Sending attachment:");
                 client.sendFile(targetID, attachment, path.basename(attachment)).catch((err) => { logger.error('Error trying to send file.'); logger.error(err);});
@@ -167,18 +168,22 @@ async function massSend(client) {
             if (targetCounter < timeouts.sleepEvery){
                 ++targetCounter;
                 logger.info(`Current target count is ${targetCounter}, up to a max of ${timeouts.sleepEvery}`)
+
+                const randomBetweenTargets = percentualVariation(timeouts.betweenTargets, timeouts.typingVariance);
                 await new Promise(resolve => {
                     logger.info(
-                        `Waiting ${timeouts.betweenTargets} seconds before going to next contact`)
-                    setTimeout(resolve, timeouts.betweenTargets * 1000);
+                        `Waiting ${randomBetweenTargets} seconds before going to next contact`)
+                    setTimeout(resolve, randomBetweenTargets * 1000);
                 });
             }
             else if (targetCounter === timeouts.sleepEvery){
                 targetCounter = 0;
+
+                const randomSleepDuration = percentualVariation(timeouts.sleepDuration, timeouts.typingVariance);
                 await new Promise(resolve => {
                     logger.info(`Reached target limit (${timeouts.sleepEvery}) - ` +
-                    `Sleeping for ${timeouts.sleepDuration} seconds`);
-                    setTimeout(resolve, timeouts.sleepDuration * 1000);
+                    `Sleeping for ${randomSleepDuration} seconds`);
+                    setTimeout(resolve, randomSleepDuration * 1000);
                 });
             }
 
