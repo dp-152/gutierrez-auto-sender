@@ -87,4 +87,10 @@ function getDateString(date, formatKeys) {
 
 }
 
+function percentualVariation(baseValue, variance){
+    const min = Math.ceil(baseValue - ((baseValue / 100) * variance));
+    const max = Math.floor(baseValue + ((baseValue / 100) * variance));
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
 module.exports = {typeTime, loadCampaignFiles, readTextfromFiles, replaceKeys, getDateString}
