@@ -88,4 +88,4 @@ function percentualVariation(baseValue, variance){
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-module.exports = {typeTime, loadCampaignFiles, readTextfromFiles, replaceKeys, getDateString}
+module.exports = {typeTime, loadCampaignFiles, readTextfromFiles, replaceKeys, getDateString, percentualVariation}

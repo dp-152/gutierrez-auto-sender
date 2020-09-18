@@ -6,7 +6,14 @@ const path = require('path');
 const {logger} = require('./sys/logger');
 const { ReportLog } = require('./sys/reportlog');
 const inifile = require('./sys/ini');
-const {typeTime, loadCampaignFiles, readTextfromFiles, replaceKeys, getDateString} = require('./sys/helper');
+const {
+    typeTime,
+    loadCampaignFiles,
+    readTextfromFiles,
+    replaceKeys,
+    getDateString,
+    percentualVariation
+} = require('./sys/helper');
 
 /*
     TODO:
