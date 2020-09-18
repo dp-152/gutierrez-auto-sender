@@ -82,6 +82,8 @@ function getDateString(date, formatKeys) {
 
 }
 
+// Generates a random number between a percentual variation threshold (above and below) the base value
+// Takes an int as base value and an int corresponding to the percentual variation to be applied
 function percentualVariation(baseValue, variance){
     const min = Math.ceil(baseValue - ((baseValue / 100) * variance));
     const max = Math.floor(baseValue + ((baseValue / 100) * variance));
