@@ -5,13 +5,8 @@ const {logger} = require('./logger');
 // Function for setting wait time to simulate human typing
 // Returns wait time in milliseconds
 function typeTime(textLength, CPM, variance= 10) {
-    // Allows for random variance of up to n%
-    CPM = parseInt(CPM);
-    variance = parseInt(variance);
-    let minCPM = Math.ceil(CPM - ((CPM / 100) * variance));
-    let maxCPM = Math.floor(CPM + ((CPM / 100) * variance));
-    let randomCPM = Math.floor(Math.random() * (maxCPM - minCPM + 1) + minCPM);
-
+    // Uses percentual variation function to return random CPM value
+    const randomCPM = percentualVariation(CPM, variance);
     // Use CPM to get seconds per character, then multiply by length of text
     let SPC = 60 / randomCPM;
     // Time in seconds * 1000 to get milliseconds
