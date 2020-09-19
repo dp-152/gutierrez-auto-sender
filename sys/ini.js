@@ -13,7 +13,9 @@ let settDef = {
       between_files: 10,
       between_targets: 15,
       sleep_every: 5,
-      sleep_duration: 30
+      sleep_duration: 30,
+      deep_sleep_every: 20,
+      deep_sleep_duration: 10
     },
     debug: {
       console_level: 'error',
@@ -91,6 +93,16 @@ function checkParameters(obj) {
       result.timeouts.sleep_duration= '30';
     else
       result.timeouts.sleep_duration = obj.timeouts.sleep_duration;
+
+    if (obj.timeouts.deep_sleep_duration === undefined)
+      result.timeouts.deep_sleep_duration = '10';
+    else
+      result.timeouts.deep_sleep_duration = obj.timeouts.deep_sleep_duration
+
+    if (obj.timeouts.deep_sleep_every === undefined)
+      result.timeouts.deep_sleep_every = '20';
+    else
+      result.timeouts.deep_sleep_every = obj.timeouts.deep_sleep_every
 
   } else {
     result.timeouts = {
