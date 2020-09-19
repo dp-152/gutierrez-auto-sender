@@ -53,10 +53,19 @@ logger.info(`Campaign name is ${campaignName}`);
 venom.create(settings.instance.name).then(
     (client) => {
         // Start listener thread
-        listener(client).then().catch((err) => { logger.error('Error trying to start a listener thread.'); logger.error(err);});
+        listener(client).then()
+            .catch((err) => {
+                logger.error('Error trying to start a listener thread.');
+                logger.error(err);
+            });
 
         // Start mass send job
-        massSend(client).then(() => logger.log('info',"Mass send job completed")).catch((err) => { logger.error('Error trying to start a Mass Send Job.'); logger.error(err);});
+        massSend(client)
+            .then(() => logger.log('info',"Mass send job completed"))
+            .catch((err) => {
+                logger.error('Error trying to start a Mass Send Job.');
+                logger.error(err);
+            });
     }).catch((err) => {
         logger.error('Error trying to start a Venom Instance.');
         logger.error(err);
