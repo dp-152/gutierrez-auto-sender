@@ -29,6 +29,7 @@ const sendList = argv.list;
 const settingsFile = argv.config;
 const settings = ini_init(settingsFile);
 const campaignDir = argv.dir;
+const campaignName = path.basename(campaignDir);
 
 // Initialize Venom instance - instance name inherited from ini file [instance] name = string
 // TODO: Get login status of account
@@ -51,8 +52,31 @@ async function listener(client) {
     logger.log('info',`Instance name: ${settings.instance.name}`);
     logger.log('info',"Running listener for account");
     client.onMessage((message => {
-        if (message.body === '2'){
-            client.sendText(message.from, "Hi there!").catch((err) => { logger.error('Error sending a reply.'); logger.error(err);});
+
+        // TODO: Add option to use regex match instead of string match
+        if (message.body === settings.relay.match && !message.from.includes('@g.us')){
+            client.sendText(
+                settings.relay.number + "@c.us",
+                replaceKeys(
+                    settings.relay.relay_message_format,
+                    {
+                        phone: message.from.toString().replace("@c.us", ""),
+                        campaign: campaignName,
+                        message: message.body
+                    })
+                )
+                .catch((err) => {
+                    logger.error('Error relaying message.');
+                    logger.error(err);
+                });
+            client.sendText(message.from, settings.relay.reply_onmatch)
+                .catch((err) => {
+                    logger.error('Error sending a reply.');
+                    logger.error(err);
+                });
+        }
+        else {
+            client.sendText(message.from, settings.relay.reply_default);
         }
     }));
 
