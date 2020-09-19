@@ -217,7 +217,8 @@ async function massSend(client) {
         }
 
         else {
-            logger.info("Invalid or nonexistant contact - skipping");
+            // TODO: Push to DB when contact is invalid
+            logger.info(`${contact.name} ${contact.phone} - Invalid or nonexistant contact - skipping`);
 
             /** ReportLog */
             finalReport.pushLog(contact.phone,false);
