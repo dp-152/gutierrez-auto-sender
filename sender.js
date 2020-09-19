@@ -20,11 +20,15 @@ const {
         - client.onMessage listener for send list auto removal
  */
 
-// Load settings file passed as --config argument
-
-let settings = ini_init();
+// Load required files from CLI arguments
 
 logger.info('Initializing server...');
+logger.info("Loading parameters...");
+
+const sendList = argv.list;
+const settingsFile = argv.config;
+const settings = ini_init(settingsFile);
+const campaignDir = argv.dir;
 
 // Initialize Venom instance - instance name inherited from ini file [instance] name = string
 // TODO: Get login status of account
@@ -60,9 +64,9 @@ async function massSend(client) {
     logger.info("Initializing Mass Sender Thread...")
 
     // Load send list passed as --send argument
-    const sendList = JSON.parse(fs.readFileSync(argv.list, encoding='utf-8'));
+    const sendList = JSON.parse(fs.readFileSync(sendList, encoding='utf-8'));
 
-    logger.info(`Campaign name is: ${path.dirname(argv.dir)}`);
+    logger.info(`Campaign name is: ${path.dirname(campaignDir)}`);
 
     // Load timeouts
     const timeouts = {
@@ -79,7 +83,7 @@ async function massSend(client) {
     // Enumerates send dir text and attachment files from --dir argument
     // Attachment files will be sent in alphabetical order
     logger.info("Probing campaign dir for text files and attachments...")
-    const campaignContent = loadCampaignFiles(argv.dir);
+    const campaignContent = loadCampaignFiles(campaignDir);
 
     // TODO: Add option to send links with preview
     // TODO: Add option to send contacts
@@ -98,7 +102,7 @@ async function massSend(client) {
     let logDate = getDateString(
         new Date(),
         "{{year}}-{{month}}-{{day}}_{{hour}}-{{minutes}}-{{seconds}}.{{milliseconds}}");
-    var logPath = argv.dir + `/logs/Report_${settings.instance.name}_${logDate}.csv`;
+    var logPath = campaignDir + `/logs/Report_${settings.instance.name}_${logDate}.csv`;
     let finalReport = new ReportLog(logPath);
 
     logger.info("Starting mass send job...");
