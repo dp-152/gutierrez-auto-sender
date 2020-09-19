@@ -80,6 +80,7 @@ async function massSend(client) {
         deepSleepDuration: parseInt(settings.timeouts.deep_sleep_duration)
     }
 
+    // Setting counters for sleep and deep sleep routines
     let sleepEveryCounter = 0;
     let deepSleepEveryCounter = 0;
 
