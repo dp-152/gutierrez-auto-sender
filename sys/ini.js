@@ -17,6 +17,12 @@ let settDef = {
       deep_sleep_every: 20,
       deep_sleep_duration: 10
     },
+    relay: {
+      number: "5541900000000",
+      match: "2",
+      reply_onmatch: "Your phone number will be removed. Thanks from Venom 🕷",
+      reply_default: "I'm sorry, I didn't catch your message. Please type 2 to be removed from this send list"
+    },
     debug: {
       console_level: 'error',
       file_level: 'info'
@@ -38,7 +44,7 @@ const ini_init = (configFile) => {
 };
 
 function checkParameters(obj) {
-  let sKeys = [false, false, false];
+  let sKeys = [false, false, false, false];
   const k = Object.keys(obj);
   const e = Object.entries(obj);
   let result = {};
@@ -48,8 +54,10 @@ function checkParameters(obj) {
       sKeys[0] = true;
     else if (v === "timeouts")
       sKeys[1] = true;
-    else if (v === "debug")
+    else if (v === "relay")
       sKeys[2] = true;
+    else if (v === "debug")
+      sKeys[3] = true;
   });
 
   if (sKeys[0]) {
@@ -118,6 +126,34 @@ function checkParameters(obj) {
   }
 
   if (sKeys[2]) {
+    if (obj.relay.number === undefined) {
+      result.relay = {};
+      result.relay.number = settDef.relay.number;
+    }
+    else
+      result.relay = obj.relay;
+
+    if (obj.relay.match === undefined)
+      result.relay.match = settDef.relay.match;
+    else
+      result.relay.match = obj.relay.match;
+
+    if (obj.relay.reply_onmatch === undefined)
+      result.relay.reply_onmatch = settDef.relay.reply_onmatch
+    else
+      result.relay.reply_onmatch = obj.relay.reply_onmatch;
+
+    if (obj.relay.reply_default === undefined)
+      result.relay.reply_default = settDef.relay.reply_default;
+    else
+      result.relay.reply_default = obj.relay.reply_default;
+  }
+  else {
+    result.relay = settDef.relay;
+  }
+
+
+  if (sKeys[3]) {
     if (obj.debug.console_level === undefined) {
       result.debug = {};
       result.debug.console_level = 'error';
