@@ -310,7 +310,7 @@ async function probeAccountHealth(client) {
                 // Ask for new auth and resume send list from last sent? If so, how???
                 // nightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmare
 
-        logger.info("{{{DEVICE HEALTH PROBE}}: Will probe account status again in 1 minute")
+        logger.info("{{{DEVICE HEALTH PROBE}}}: Will probe account status again in 1 minute")
 
         await new Promise( resolve => {setTimeout(resolve, 1 * 60 * 1000);})
             .catch(err => {
