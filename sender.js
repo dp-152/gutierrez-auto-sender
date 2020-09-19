@@ -306,6 +306,9 @@ async function probeAccountHealth(client) {
         else
             logger.error("{{{DEVICE HEALTH PROBE}}}: Device is disconnected!!" +
                 " Please check device status manually!");
+                // TODO: Do something when the device is disconnected.
+                // Ask for new auth and resume send list from last sent? If so, how???
+                // nightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmare
 
         logger.info("{{{DEVICE HEALTH PROBE}}: Will probe account status again in 1 minute")
 
