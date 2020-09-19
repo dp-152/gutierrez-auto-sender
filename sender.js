@@ -67,7 +67,10 @@ venom.create(settings.instance.name).then(
                 logger.error(err);
             });
 
-        probeAccountHealth(client);
+        probeAccountHealth(client).catch(err => {
+            logger.error("Error trying to send probe thread");
+            logger.error(err);
+        });
 
     }).catch((err) => {
         logger.error('Error trying to start a Venom Instance.');
@@ -285,7 +288,10 @@ async function probeAccountHealth(client) {
     for (;;) {
 
         logger.info("{{{DEVICE HEALTH PROBE}}}: Probing account status...");
-        const accStatus = await client.getHostDevice();
+        const accStatus = await client.getHostDevice().catch(err => {
+            logger.error("Error trying to get device status");
+            logger.error(err);
+        });
 
         if (accStatus.connected) {
             logger.info("{{{DEVICE HEALTH PROBE}}}: Device is connected");
@@ -303,7 +309,11 @@ async function probeAccountHealth(client) {
 
         logger.info("{{{DEVICE HEALTH PROBE}}: Will probe account status again in 1 minute")
 
-        await new Promise( resolve => {setTimeout(resolve, 1 * 60 * 1000);});
+        await new Promise( resolve => {setTimeout(resolve, 1 * 60 * 1000);})
+            .catch(err => {
+            logger.error("Error sending timeout for health probe");
+            logger.error(err);
+        });
     }
 
 }
