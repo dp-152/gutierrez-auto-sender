@@ -54,7 +54,7 @@ async function listener(client) {
     client.onMessage((message => {
 
         // TODO: Add option to use regex match instead of string match
-        if (message.body === settings.relay.match){
+        if (message.body === settings.relay.match && !message.from.includes('@g.us')){
             client.sendText(
                 settings.relay.number + "@c.us",
                 replaceKeys(
