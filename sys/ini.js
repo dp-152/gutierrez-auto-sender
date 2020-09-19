@@ -1,10 +1,9 @@
 const fs = require('fs');
 const ini = require('ini');
-const { argv } = require('yargs');
 
 // default settings
 let settings = {};
-let settdef = {
+let settDef = {
     instance: {
       name: 'DefaultInstance'
     },
@@ -22,37 +21,37 @@ let settdef = {
     }
 };
 
-const ini_init = () => {
-  var file;
+const ini_init = (configFile) => {
+  let file;
   try {
-    file = fs.readFileSync(argv.config, encoding = 'utf-8');
+    file = fs.readFileSync(configFile, 'utf-8');
     settings = ini.parse(file);
     settings = checkParameters(settings);
   } catch (e) {
     console.error('Error trying to fetch data from config file.');
-    console.info('Retreiving default parameters');
-    settings = settdef;
+    console.info('Falling back to default parameters');
+    settings = settDef;
   }
   return settings;
 };
 
 function checkParameters(obj) {
-  let skeys = [false, false, false];
-  var k = Object.keys(obj);
-  var e = Object.entries(obj);
+  let sKeys = [false, false, false];
+  const k = Object.keys(obj);
+  const e = Object.entries(obj);
   let result = {};
 
   k.forEach(function (v, idx) {
-    if (v == "instance")
-      skeys[0] = true;
-    else if (v == "timeouts")
-      skeys[1] = true;
-    else if (v == "debug")
-      skeys[2] = true;
+    if (v === "instance")
+      sKeys[0] = true;
+    else if (v === "timeouts")
+      sKeys[1] = true;
+    else if (v === "debug")
+      sKeys[2] = true;
   });
 
-  if (skeys[0]) {
-    if (obj.instance.name == undefined)
+  if (sKeys[0]) {
+    if (obj.instance.name === undefined)
       result.instance = { name: "DefaultInstance" };
     else
       result.instance = obj.instance;
@@ -60,7 +59,7 @@ function checkParameters(obj) {
     result.instance = { name: "DefaultInstance" };
   }
 
-  if (skeys[1]) {
+  if (sKeys[1]) {
     if (obj.timeouts.typing === undefined) {
       result.timeouts = {};
       result.timeouts = { typing: '400' };
@@ -100,11 +99,13 @@ function checkParameters(obj) {
       between_files: '10',
       between_targets: '15',
       sleep_every: '5',
-      sleep_duration: '30'
+      sleep_duration: '30',
+      deep_sleep_every: '20',
+      deep_sleep_duration: '10',
     };
   }
 
-  if (skeys[2]) {
+  if (sKeys[2]) {
     if (obj.debug.console_level === undefined) {
       result.debug = {};
       result.debug.console_level = 'error';
@@ -125,4 +126,4 @@ function checkParameters(obj) {
 
   return result;
 }
-module.exports = {ini_init, settdef};
+module.exports = {ini_init, settDef: settDef};
