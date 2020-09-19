@@ -21,7 +21,8 @@ let settDef = {
       number: "5541900000000",
       match: "2",
       reply_onmatch: "Your phone number will be removed. Thanks from Venom 🕷",
-      reply_default: "I'm sorry, I didn't catch your message. Please type 2 to be removed from this send list"
+      reply_default: "I'm sorry, I didn't catch your message. Please type 2 to be removed from this send list",
+      relay_message_format: "From: {{phone}}\nCampaign: {{campaign}}\nMessage: {{message}}"
     },
     debug: {
       console_level: 'error',
@@ -147,11 +148,15 @@ function checkParameters(obj) {
       result.relay.reply_default = settDef.relay.reply_default;
     else
       result.relay.reply_default = obj.relay.reply_default;
+
+    if (obj.relay.relay_message_format === undefined)
+      result.relay.relay_message_format = settDef.relay.relay_message_format;
+    else
+      result.relay.relay_message_format = obj.relay.relay_message_format;
   }
   else {
     result.relay = settDef.relay;
   }
-
 
   if (sKeys[3]) {
     if (obj.debug.console_level === undefined) {
