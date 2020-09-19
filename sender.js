@@ -34,17 +34,16 @@ logger.info(getDateString(new Date(), `
 #
 #
 #          ********* Welcome Venom 🕷 *********
-#       {{year}}/{{month}}/{{day}} -- {{hour}}:{{minutes}}
+#                  {{year}}/{{month}}/{{day}} -- {{hour}}:{{minutes}}
 #
 #
-############################################################# 
-`));
+#############################################################`));
 logger.info("Loading parameters...");
 
 logger.info("Parameters loaded.");
 logger.info(`Send list is ${sendList}`);
 logger.info(`Settings file is ${settingsFile}`);
-logger.info("Loaded settings: " + settings);
+logger.info("Loaded settings: " + JSON.stringify(settings));
 logger.info(`Campaign dir is ${campaignDir}`);
 logger.info(`Campaign name is ${campaignName}`);
 
