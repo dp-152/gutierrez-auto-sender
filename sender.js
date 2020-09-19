@@ -22,14 +22,31 @@ const {
 
 // Load required files from CLI arguments
 
-logger.info('Initializing server...');
-logger.info("Loading parameters...");
-
 const sendList = argv.list;
 const settingsFile = argv.config;
 const settings = ini_init(settingsFile);
 const campaignDir = argv.dir;
 const campaignName = path.basename(campaignDir);
+
+logger.info('Initializing server...');
+logger.info(getDateString(new Date(), `
+#############################################################
+#
+#
+#          ********* Welcome Venom 🕷 *********
+#       {{year}}/{{month}}/{{day}} -- {{hour}}:{{minutes}}
+#
+#
+############################################################# 
+`));
+logger.info("Loading parameters...");
+
+logger.info("Parameters loaded.");
+logger.info(`Send list is ${sendList}`);
+logger.info(`Settings file is ${settingsFile}`);
+logger.info("Loaded settings: " + settings);
+logger.info(`Campaign dir is ${campaignDir}`);
+logger.info(`Campaign name is ${campaignName}`);
 
 // Initialize Venom instance - instance name inherited from ini file [instance] name = string
 // TODO: Get login status of account
