@@ -1,5 +1,6 @@
 const fs = require('fs');
 const ini = require('ini');
+const { argv } = require('yargs');
 
 // default settings
 let settings = {};
@@ -30,7 +31,7 @@ let settDef = {
     }
 };
 
-const ini_init = (configFile) => {
+const ini_init = (configFile = argv.config) => {
   let file;
   try {
     file = fs.readFileSync(configFile, 'utf-8');
