@@ -66,6 +66,12 @@ venom.create(settings.instance.name).then(
                 logger.error('Error trying to start a Mass Send Job.');
                 logger.error(err);
             });
+
+        probeAccountHealth(client).catch(err => {
+            logger.error("Error trying to send probe thread");
+            logger.error(err);
+        });
+
     }).catch((err) => {
         logger.error('Error trying to start a Venom Instance.');
         logger.error(err);
@@ -273,4 +279,44 @@ async function massSend(client) {
             finalReport.pushLog(contact.phone,false);
         }
     }
+}
+
+async function probeAccountHealth(client) {
+    logger.info("{{{DEVICE HEALTH PROBE}}}: Waiting 30 seconds before initial probe...");
+    await new Promise(resolve => setTimeout(resolve, 30 * 1000));
+
+    for (;;) {
+
+        logger.info("{{{DEVICE HEALTH PROBE}}}: Probing account status...");
+        const accStatus = await client.getHostDevice().catch(err => {
+            logger.error("Error trying to get device status");
+            logger.error(err);
+        });
+
+        if (accStatus.connected) {
+            logger.info("{{{DEVICE HEALTH PROBE}}}: Device is connected");
+            let isPlugged = accStatus.plugged ? " and charging..." : ""
+            logger.info(`{{{DEVICE HEALTH PROBE}}}: Battery is at ${accStatus.battery}%${isPlugged}`);
+            if (accStatus.battery < 30 && !accStatus.plugged)
+                logger.info("{{{DEVICE HEALTH PROBE}}}: Battery is low! please plug the phone to the charger");
+            else if (accStatus.battery < 15 && !accStatus.plugged)
+                logger.error("{{{DEVICE HEALTH PROBE}}}: BATTERY LEVEL CRITICAL!!!" +
+                    " PLUG THE PHONE IMMEDIATELY!");
+        }
+        else
+            logger.error("{{{DEVICE HEALTH PROBE}}}: Device is disconnected!!" +
+                " Please check device status manually!");
+                // TODO: Do something when the device is disconnected.
+                // Ask for new auth and resume send list from last sent? If so, how???
+                // nightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmare
+
+        logger.info("{{{DEVICE HEALTH PROBE}}}: Will probe account status again in 1 minute")
+
+        await new Promise( resolve => {setTimeout(resolve, 1 * 60 * 1000);})
+            .catch(err => {
+            logger.error("Error sending timeout for health probe");
+            logger.error(err);
+        });
+    }
+
 }
