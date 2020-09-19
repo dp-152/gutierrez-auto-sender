@@ -22,7 +22,7 @@ const {
 
 // Load required files from CLI arguments
 
-const sendList = argv.list;
+const sendListDir = argv.list;
 const settingsFile = argv.config;
 const settings = ini_init(settingsFile);
 const campaignDir = argv.dir;
@@ -41,7 +41,7 @@ logger.info(getDateString(new Date(), `
 logger.info("Loading parameters...");
 
 logger.info("Parameters loaded.");
-logger.info(`Send list is ${sendList}`);
+logger.info(`Send list is ${sendListDir}`);
 logger.info(`Settings file is ${settingsFile}`);
 logger.info("Loaded settings: " + JSON.stringify(settings));
 logger.info(`Campaign dir is ${campaignDir}`);
@@ -113,7 +113,7 @@ async function massSend(client) {
     logger.info("Initializing Mass Sender Thread...")
 
     // Load send list passed as --send argument
-    const sendList = JSON.parse(fs.readFileSync(sendList, encoding='utf-8'));
+    const sendList = JSON.parse(fs.readFileSync(sendListDir, encoding='utf-8'));
 
     logger.info(`Campaign name is: ${path.dirname(campaignDir)}`);
 
