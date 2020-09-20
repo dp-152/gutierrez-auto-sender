@@ -84,10 +84,22 @@ function getDateString(date, formatKeys) {
 
 // Generates a random number between a percentual variation threshold (above and below) the base value
 // Takes an int as base value and an int corresponding to the percentual variation to be applied
-function percentualVariation(baseValue, variance){
-    const min = Math.ceil(baseValue - ((baseValue / 100) * variance));
-    const max = Math.floor(baseValue + ((baseValue / 100) * variance));
-    return Math.floor(Math.random() * (max - min + 1) + min);
+function percentualVariation(baseValue, variance, float = true){
+
+    let min = baseValue - ((baseValue / 100) * variance);
+    let max = baseValue + ((baseValue / 100) * variance);
+
+    if (!float) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+    }
+
+    let result = Math.random() * (max - min + 1) + min
+
+    if (!float)
+        result = Math.floor(result);
+
+    return result;
 }
 
 module.exports = {typeTime, loadCampaignFiles, readTextfromFiles, replaceKeys, getDateString, percentualVariation}
