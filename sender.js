@@ -382,11 +382,11 @@ function createVenom(instanceName) {
 
 function destroyVenom(client) {
     logger.warn("Destroy sequence has been initiated.");
-    logger.warn(`Current instance is ${settings.instance.name}`);
+    logger.warn(`Current instance is ${instanceName}`);
     logger.warn(`Current campaign is ${campaignName}`);
     logger.warn(`Current send list is ${sendListDir}`);
     logger.warn(`Current sendList index is ${sendListIndex}`);
-    logger.warn(`Will now close instance ${settings.instance.name}`);
+    logger.warn(`Will now close instance ${instanceName}`);
 
 
 }
