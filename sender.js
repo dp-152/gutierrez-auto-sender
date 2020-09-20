@@ -139,6 +139,9 @@ async function massSend(client) {
     let sleepEveryCounter = 0;
     let deepSleepEveryCounter = 0;
 
+    // Setting counter for send list index position
+    let sendListIndex = 0;
+
     // Enumerates send dir text and attachment files from --dir argument
     // Attachment files will be sent in alphabetical order
     logger.info("Probing campaign dir for text files and attachments...")
@@ -167,6 +170,9 @@ async function massSend(client) {
     logger.info("Starting mass send job...");
     // Iterates through contact list from JSON
     for (let contact of sendList.contacts) {
+        ++sendListIndex;
+        logger.info(`Send Job Progress: Currently at target ${sendListIndex} out of ${sendList.contacts.length}`);
+
         let targetID = contact.phone + "@c.us";
 
         // Checks if profile is valid. If not, returns int 404
@@ -278,6 +284,10 @@ async function massSend(client) {
             /** ReportLog */
             finalReport.pushLog(contact.phone,false);
         }
+
+        logger.info(`Send Job Progress: Sent to target ${sendListIndex} out of ${sendList.contacts.length}`);
+        const jobPercentComplete = Math.round(sendListIndex / sendList.contacts.length * 100 * 10) / 10;
+        logger.info(`Send Job Progress: Job is ${jobPercentComplete}% complete.`);
     }
 }
 
