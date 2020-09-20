@@ -47,35 +47,18 @@ logger.info("Loaded settings: " + JSON.stringify(settings));
 logger.info(`Campaign dir is ${campaignDir}`);
 logger.info(`Campaign name is ${campaignName}`);
 
-// Initialize Venom instance - instance name inherited from ini file [instance] name = string
+// Setting counter for send list index position
+// Declared in global scope to keep it safe from venom thread destruction
+let sendListIndex = 0;
+
+// First init of Venom instance - instance name inherited from ini file [instance] name = string
 // TODO: Get login status of account
 // TODO: Handle login errors (?)
-venom.create(settings.instance.name).then(
-    (client) => {
-        // Start listener thread
-        listener(client).then()
-            .catch((err) => {
-                logger.error('Error trying to start a listener thread.');
-                logger.error(err);
-            });
 
-        // Start mass send job
-        massSend(client)
-            .then(() => logger.log('info',"Mass send job completed"))
-            .catch((err) => {
-                logger.error('Error trying to start a Mass Send Job.');
-                logger.error(err);
-            });
+// Save instance name to global scope
+let instanceName = settings.instance.name;
 
-        probeAccountHealth(client).catch(err => {
-            logger.error("Error trying to send probe thread");
-            logger.error(err);
-        });
-
-    }).catch((err) => {
-        logger.error('Error trying to start a Venom Instance.');
-        logger.error(err);
-    });
+createVenom(instanceName);
 
 // Listener thread
 // TODO: Implement device health check (battery, service, connection)
@@ -138,9 +121,6 @@ async function massSend(client) {
     // Setting counters for sleep and deep sleep routines
     let sleepEveryCounter = 0;
     let deepSleepEveryCounter = 0;
-
-    // Setting counter for send list index position
-    let sendListIndex = 0;
 
     // Enumerates send dir text and attachment files from --dir argument
     // Attachment files will be sent in alphabetical order
@@ -321,6 +301,8 @@ async function massSend(client) {
 async function probeAccountHealth(client) {
     logger.info("{{{DEVICE HEALTH PROBE}}}: Waiting 30 seconds before initial probe...");
     await new Promise(resolve => setTimeout(resolve, 30 * 1000));
+    let disconnectCount = 0;
+    let probeTimeout = 5;
 
     for (;;) {
         logger.info("{{{DEVICE HEALTH PROBE}}}: Probing account status...");
@@ -330,6 +312,8 @@ async function probeAccountHealth(client) {
         });
 
         if (accStatus.connected) {
+            disconnectCount = 0;
+            probeTimeout = 5;
             logger.info("{{{DEVICE HEALTH PROBE}}}: Device is connected");
             let isPlugged = accStatus.plugged ? " and charging..." : ""
             logger.info(`{{{DEVICE HEALTH PROBE}}}: Battery is at ${accStatus.battery}%${isPlugged}`);
@@ -339,20 +323,83 @@ async function probeAccountHealth(client) {
                 logger.error("{{{DEVICE HEALTH PROBE}}}: BATTERY LEVEL CRITICAL!!!" +
                     " PLUG THE PHONE IMMEDIATELY!");
         }
-        else
+
+        else {
             logger.error("{{{DEVICE HEALTH PROBE}}}: Device is disconnected!!" +
                 " Please check device status manually!");
-                // TODO: Do something when the device is disconnected.
-                // Ask for new auth and resume send list from last sent? If so, how???
-                // nightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmare
+            if (disconnectCount < 5) {
+                ++disconnectCount;
+                probeTimeout = 1;
+            }
+            else {
+                logger.error("{{{DEVICE HEALTH PROBE}}}: DEVICE HAS BEEN OFFLINE FOR MORE THAN 5 PROBES!!!");
+                logger.warn("{{{DEVICE HEALTH PROBE}}}: WILL INITIATE SELF-DESTRUCT SEQUENCE");
+                await destroyVenom(client)
+                    .then(success => {
+                        logger.warn("{{{DEVICE HEALTH PROBE}}}: THREAD DESTROYED!");
+                        logger.warn("{{{DEVICE HEALTH PROBE}}}: Waiting for user input to start new thread...");
+                })
+                    .catch(err => {
+                        logger.error("Error trying to destroy Venom thread");
+                    });
+            }
+        }
 
-        logger.info("{{{DEVICE HEALTH PROBE}}}: Will probe account status again in 1 minute")
+        logger.info(`{{{DEVICE HEALTH PROBE}}}: Will probe account status again in ${probeTimeout}`+
+            ` minute${probeTimeout != 1 ? "s" : ""}`);
 
-        await new Promise( resolve => {setTimeout(resolve, 1 * 60 * 1000);})
+        await new Promise( resolve => {setTimeout(resolve, probeTimeout * 60 * 1000);})
             .catch(err => {
             logger.error("Error sending timeout for health probe");
             logger.error(err);
         });
     }
 
+}
+
+function createVenom(instanceName) {
+
+    venom.create(instanceName).then(
+        (client) => {
+            // Start listener thread
+            listener(client).then()
+                .catch((err) => {
+                    logger.error('Error trying to start a listener thread.');
+                    logger.error(err);
+                });
+
+            // Start mass send job
+            massSend(client)
+                .then(() => logger.log('info',"Mass send job completed"))
+                .catch((err) => {
+                    logger.error('Error trying to start a Mass Send Job.');
+                    logger.error(err);
+                });
+
+            probeAccountHealth(client).catch(err => {
+                logger.error("Error trying to send probe thread");
+                logger.error(err);
+            });
+
+        }).catch((err) => {
+        logger.error('Error trying to start a Venom Instance.');
+        logger.error(err);
+    });
+}
+
+async function destroyVenom(client) {
+    logger.warn("Destroy sequence has been initiated.");
+    logger.warn(`Current instance is ${instanceName}`);
+    logger.warn(`Current campaign is ${campaignName}`);
+    logger.warn(`Current send list is ${sendListDir}`);
+    logger.warn(`Current sendList index is ${sendListIndex}`);
+    logger.warn(`Will now close instance ${instanceName} - session ID: ${client.page._client._sessionId}`);
+    await client.close()
+        .then(success => {
+            logger.info(`Closed thread ${instanceName} successfully - ${success}`);
+        })
+        .catch(error => {
+            logger.error("FUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCK");
+            logger.error(error);
+        });
 }
