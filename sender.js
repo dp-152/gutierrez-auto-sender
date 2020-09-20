@@ -333,7 +333,7 @@ async function probeAccountHealth(client) {
             }
             else {
                 logger.error("{{{DEVICE HEALTH PROBE}}}: DEVICE HAS BEEN OFFLINE FOR MORE THAN 5 PROBES!!!");
-                logger.error("{{{DEVICE HEALTH PROBE}}}: WILL INITIATE SELF-DESTRUCT SEQUENCE");
+                logger.warn("{{{DEVICE HEALTH PROBE}}}: WILL INITIATE SELF-DESTRUCT SEQUENCE");
 
             }
         }
@@ -378,4 +378,15 @@ function createVenom(instanceName) {
         logger.error('Error trying to start a Venom Instance.');
         logger.error(err);
     });
+}
+
+function destroyVenom(client) {
+    logger.warn("Destroy sequence has been initiated.");
+    logger.warn(`Current instance is ${settings.instance.name}`);
+    logger.warn(`Current campaign is ${campaignName}`);
+    logger.warn(`Current send list is ${sendListDir}`);
+    logger.warn(`Current sendList index is ${sendListIndex}`);
+    logger.warn(`Will now close instance ${settings.instance.name}`);
+
+
 }
