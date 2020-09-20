@@ -338,6 +338,10 @@ async function probeAccountHealth(client) {
                     .then(success => {
                         logger.warn("{{{DEVICE HEALTH PROBE}}}: THREAD DESTROYED!");
                         logger.warn("{{{DEVICE HEALTH PROBE}}}: Waiting for user input to start new thread...");
+                        console.log("Press any key to continue...");
+                        process.stdin.once('data', () => {
+                            restartVenom();
+                        })
                 })
                     .catch(err => {
                         logger.error("Error trying to destroy Venom thread");
@@ -402,4 +406,9 @@ async function destroyVenom(client) {
             logger.error("FUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCK");
             logger.error(error);
         });
+}
+
+async function restartVenom() {
+    instanceName = `temp_${new Date.now().toString(16)}`;
+    createVenom(instanceName);
 }
