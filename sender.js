@@ -386,7 +386,7 @@ function destroyVenom(client) {
     logger.warn(`Current campaign is ${campaignName}`);
     logger.warn(`Current send list is ${sendListDir}`);
     logger.warn(`Current sendList index is ${sendListIndex}`);
-    logger.warn(`Will now close instance ${instanceName}`);
+    logger.warn(`Will now close instance ${instanceName} - session ID: ${client.page._client._sessionId}`);
 
 
 }
