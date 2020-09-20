@@ -56,9 +56,9 @@ let sendListIndex = 0;
 // TODO: Handle login errors (?)
 
 // Save instance name to global scope
-let instanceName = settings.instance.name;
+let globalInstanceName = settings.instance.name;
 
-createVenom(instanceName);
+createVenom(globalInstanceName);
 
 // Listener thread
 // TODO: Implement device health check (battery, service, connection)
@@ -393,14 +393,14 @@ function createVenom(instanceName) {
 
 async function destroyVenom(client) {
     logger.warn("Destroy sequence has been initiated.");
-    logger.warn(`Current instance is ${instanceName}`);
+    logger.warn(`Current instance is ${globalInstanceName}`);
     logger.warn(`Current campaign is ${campaignName}`);
     logger.warn(`Current send list is ${sendListDir}`);
     logger.warn(`Current sendList index is ${sendListIndex}`);
-    logger.warn(`Will now close instance ${instanceName} - session ID: ${client.page._client._sessionId}`);
+    logger.warn(`Will now close instance ${globalInstanceName} - session ID: ${client.page._client._sessionId}`);
     await client.close()
         .then(success => {
-            logger.info(`Closed thread ${instanceName} successfully - ${success}`);
+            logger.info(`Closed thread ${globalInstanceName} successfully - ${success}`);
         })
         .catch(error => {
             logger.error("FUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCK");
@@ -409,6 +409,6 @@ async function destroyVenom(client) {
 }
 
 async function restartVenom() {
-    instanceName = `temp_${new Date.now().toString(16)}`;
-    createVenom(instanceName);
+    globalInstanceName = `temp_${new Date.now().toString(16)}`;
+    createVenom(globalInstanceName);
 }
