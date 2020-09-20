@@ -168,6 +168,9 @@ async function massSend(client) {
     let finalReport = new ReportLog(logPath);
 
     logger.info("Starting mass send job...");
+
+    logger.info(`Send list has a total of ${sendList.contacts.length} targets`)
+
     // Iterates through contact list from JSON
     for (let contact of sendList.contacts) {
         ++sendListIndex;
