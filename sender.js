@@ -380,13 +380,19 @@ function createVenom(instanceName) {
     });
 }
 
-function destroyVenom(client) {
+async function destroyVenom(client) {
     logger.warn("Destroy sequence has been initiated.");
     logger.warn(`Current instance is ${instanceName}`);
     logger.warn(`Current campaign is ${campaignName}`);
     logger.warn(`Current send list is ${sendListDir}`);
     logger.warn(`Current sendList index is ${sendListIndex}`);
     logger.warn(`Will now close instance ${instanceName} - session ID: ${client.page._client._sessionId}`);
-
-
+    await client.close()
+        .then(success => {
+            logger.info(`Closed thread ${instanceName} successfully - ${success}`);
+        })
+        .catch(error => {
+            logger.error("FUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCK");
+            logger.error(error);
+        });
 }
