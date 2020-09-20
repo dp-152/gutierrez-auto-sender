@@ -51,14 +51,18 @@ logger.info(`Campaign name is ${campaignName}`);
 // Declared in global scope to keep it safe from venom thread destruction
 let sendListIndex = 0;
 
+// Setting global scope WhatsApp connected flag
+// Will cause mass sender thread to sleep while false
+let clientIsConnectedFlag = undefined;
+
 // First init of Venom instance - instance name inherited from ini file [instance] name = string
 // TODO: Get login status of account
 // TODO: Handle login errors (?)
 
 // Save instance name to global scope
-let instanceName = settings.instance.name;
+let globalInstanceName = settings.instance.name;
 
-createVenom(instanceName);
+createVenom(globalInstanceName);
 
 // Listener thread
 // TODO: Implement device health check (battery, service, connection)
@@ -151,8 +155,24 @@ async function massSend(client) {
 
     logger.info(`Send list has a total of ${sendList.contacts.length} targets`)
 
+    const startingIndex = sendListIndex
+
     // Iterates through contact list from JSON
-    for (let contact of sendList.contacts) {
+    sender_main_loop:
+    for (let contact of sendList.contacts.slice(startingIndex)) {
+        while (!clientIsConnectedFlag){
+            if (client != undefined) {
+                logger.warn("Mass sender thread: Client is disconnected but still alive." +
+                    " Sleeping for 15 seconds");
+                await new Promise(resolve => {setTimeout(resolve, 15 * 1000);});
+            }
+            else {
+                logger.crit(`Mass sender thread: Client has been killed.` +
+                    ` Halting mass send at ${sendListIndex} sends`);
+                break sender_main_loop;
+            }
+        }
+
         ++sendListIndex;
         logger.info(`Send Job Progress: Currently at target ${sendListIndex}`+
             ` out of ${sendList.contacts.length}`);
@@ -312,6 +332,7 @@ async function probeAccountHealth(client) {
         });
 
         if (accStatus.connected) {
+            clientIsConnectedFlag = true;
             disconnectCount = 0;
             probeTimeout = 5;
             logger.info("{{{DEVICE HEALTH PROBE}}}: Device is connected");
@@ -325,6 +346,7 @@ async function probeAccountHealth(client) {
         }
 
         else {
+            clientIsConnectedFlag = false;
             logger.error("{{{DEVICE HEALTH PROBE}}}: Device is disconnected!!" +
                 " Please check device status manually!");
             if (disconnectCount < 5) {
@@ -338,10 +360,12 @@ async function probeAccountHealth(client) {
                     .then(success => {
                         logger.warn("{{{DEVICE HEALTH PROBE}}}: THREAD DESTROYED!");
                         logger.warn("{{{DEVICE HEALTH PROBE}}}: Waiting for user input to start new thread...");
-                })
+                        restartVenom();
+                    })
                     .catch(err => {
                         logger.error("Error trying to destroy Venom thread");
                     });
+                break;
             }
         }
 
@@ -358,6 +382,8 @@ async function probeAccountHealth(client) {
 }
 
 function createVenom(instanceName) {
+
+    clientIsConnectedFlag = true;
 
     venom.create(instanceName).then(
         (client) => {
@@ -389,17 +415,27 @@ function createVenom(instanceName) {
 
 async function destroyVenom(client) {
     logger.warn("Destroy sequence has been initiated.");
-    logger.warn(`Current instance is ${instanceName}`);
+    logger.warn(`Current instance is ${globalInstanceName}`);
     logger.warn(`Current campaign is ${campaignName}`);
     logger.warn(`Current send list is ${sendListDir}`);
     logger.warn(`Current sendList index is ${sendListIndex}`);
-    logger.warn(`Will now close instance ${instanceName} - session ID: ${client.page._client._sessionId}`);
+    logger.warn(`Will now close instance ${globalInstanceName} - session ID: ${client.page._client._sessionId}`);
     await client.close()
         .then(success => {
-            logger.info(`Closed thread ${instanceName} successfully - ${success}`);
+            logger.info(`Closed thread ${globalInstanceName} successfully - ${success}`);
         })
         .catch(error => {
             logger.error("FUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCK");
             logger.error(error);
         });
+}
+
+async function restartVenom() {
+    logger.warn("Sleeping for 30 seconds before starting a new Venom instance");
+    await new Promise(resolve => {setTimeout(resolve, 30 * 1000);}).catch(err => process.abort(err));
+    console.log("Press any key to continue...");
+    process.stdin.once('data', () => {
+        globalInstanceName = `temp_${Date.now().toString(16)}`;
+        createVenom(globalInstanceName);
+    });
 }
