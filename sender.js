@@ -47,35 +47,11 @@ logger.info("Loaded settings: " + JSON.stringify(settings));
 logger.info(`Campaign dir is ${campaignDir}`);
 logger.info(`Campaign name is ${campaignName}`);
 
-// Initialize Venom instance - instance name inherited from ini file [instance] name = string
+// First init of Venom instance - instance name inherited from ini file [instance] name = string
 // TODO: Get login status of account
 // TODO: Handle login errors (?)
-venom.create(settings.instance.name).then(
-    (client) => {
-        // Start listener thread
-        listener(client).then()
-            .catch((err) => {
-                logger.error('Error trying to start a listener thread.');
-                logger.error(err);
-            });
 
-        // Start mass send job
-        massSend(client)
-            .then(() => logger.log('info',"Mass send job completed"))
-            .catch((err) => {
-                logger.error('Error trying to start a Mass Send Job.');
-                logger.error(err);
-            });
-
-        probeAccountHealth(client).catch(err => {
-            logger.error("Error trying to send probe thread");
-            logger.error(err);
-        });
-
-    }).catch((err) => {
-        logger.error('Error trying to start a Venom Instance.');
-        logger.error(err);
-    });
+createVenom(settings.instance.name);
 
 // Listener thread
 // TODO: Implement device health check (battery, service, connection)
@@ -355,4 +331,34 @@ async function probeAccountHealth(client) {
         });
     }
 
+}
+
+function createVenom(instanceName) {
+
+    venom.create(instanceName).then(
+        (client) => {
+            // Start listener thread
+            listener(client).then()
+                .catch((err) => {
+                    logger.error('Error trying to start a listener thread.');
+                    logger.error(err);
+                });
+
+            // Start mass send job
+            massSend(client)
+                .then(() => logger.log('info',"Mass send job completed"))
+                .catch((err) => {
+                    logger.error('Error trying to start a Mass Send Job.');
+                    logger.error(err);
+                });
+
+            probeAccountHealth(client).catch(err => {
+                logger.error("Error trying to send probe thread");
+                logger.error(err);
+            });
+
+        }).catch((err) => {
+        logger.error('Error trying to start a Venom Instance.');
+        logger.error(err);
+    });
 }
