@@ -55,7 +55,10 @@ let sendListIndex = 0;
 // TODO: Get login status of account
 // TODO: Handle login errors (?)
 
-createVenom(settings.instance.name);
+// Save instance name to global scope
+let instanceName = settings.instance.name;
+
+createVenom(instanceName);
 
 // Listener thread
 // TODO: Implement device health check (battery, service, connection)
