@@ -47,6 +47,10 @@ logger.info("Loaded settings: " + JSON.stringify(settings));
 logger.info(`Campaign dir is ${campaignDir}`);
 logger.info(`Campaign name is ${campaignName}`);
 
+// Setting counter for send list index position
+// Declared in global scope to keep it safe from venom thread destruction
+let sendListIndex = 0;
+
 // First init of Venom instance - instance name inherited from ini file [instance] name = string
 // TODO: Get login status of account
 // TODO: Handle login errors (?)
@@ -114,9 +118,6 @@ async function massSend(client) {
     // Setting counters for sleep and deep sleep routines
     let sleepEveryCounter = 0;
     let deepSleepEveryCounter = 0;
-
-    // Setting counter for send list index position
-    let sendListIndex = 0;
 
     // Enumerates send dir text and attachment files from --dir argument
     // Attachment files will be sent in alphabetical order
