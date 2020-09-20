@@ -174,12 +174,17 @@ async function massSend(client) {
     // Iterates through contact list from JSON
     for (let contact of sendList.contacts) {
         ++sendListIndex;
-        logger.info(`Send Job Progress: Currently at target ${sendListIndex} out of ${sendList.contacts.length}`);
+        logger.info(`Send Job Progress: Currently at target ${sendListIndex}`+
+            ` out of ${sendList.contacts.length}`);
 
         let targetID = contact.phone + "@c.us";
 
         // Checks if profile is valid. If not, returns int 404
-        let profile = await client.getNumberProfile(targetID).catch((err) => { logger.error('Error getting profile number.'); logger.error(err);});
+        let profile = await client.getNumberProfile(targetID)
+            .catch((err) => {
+                logger.error('Error getting profile number.');
+                logger.error(err);
+            });
 
         if (profile !== 404) {
             logger.info(`Retrieved profile data:    - Account: ${profile.id.user}
@@ -195,7 +200,11 @@ async function massSend(client) {
 
                 message = replaceKeys(message, contact);
 
-                client.startTyping(targetID).then().catch((err) => { logger.error('Error trying to start typing.'); logger.error(err);});
+                client.startTyping(targetID).then()
+                    .catch((err) => {
+                        logger.error('Error trying to start typing.');
+                        logger.error(err);
+                    });
                 logger.info("Started typing");
 
                 await new Promise(resolve => {
@@ -208,10 +217,18 @@ async function massSend(client) {
                     setTimeout(resolve, typingTime);
                 });
 
-                await client.sendText(targetID, message).catch((err) => { logger.error('Error sending message.'); logger.error(err);});
+                await client.sendText(targetID, message)
+                    .catch((err) => {
+                        logger.error('Error sending message.');
+                        logger.error(err);
+                    });
                 logger.info(`Typed text: ${message}`);
 
-                client.stopTyping(targetID).then().catch((err) => { logger.error('Error trying to stop typing.'); logger.error(err);});
+                client.stopTyping(targetID).then()
+                    .catch((err) => {
+                        logger.error('Error trying to stop typing.');
+                        logger.error(err);
+                    });
                 logger.info("Stopped typing");
             }
 
@@ -224,7 +241,11 @@ async function massSend(client) {
                         randomBetweenFiles * 1000);
                 });
                 logger.info("Sending attachment:");
-                client.sendFile(targetID, attachment, path.basename(attachment)).catch((err) => { logger.error('Error trying to send file.'); logger.error(err);});
+                client.sendFile(targetID, attachment, path.basename(attachment))
+                    .catch((err) => {
+                        logger.error('Error trying to send file.');
+                        logger.error(err);
+                    });
                 logger.info(`Sent ${path.basename(attachment)} as file`);
             }
 
@@ -270,7 +291,10 @@ async function massSend(client) {
                 deepSleepEveryCounter = 0;
                 sleepEveryCounter = 0;
 
-                const randomDeepSleepDuration = percentualVariation(timeouts.deepSleepDuration, timeouts.typingVariance);
+                const randomDeepSleepDuration = percentualVariation(
+                    timeouts.deepSleepDuration,
+                    timeouts.typingVariance
+                );
                 await new Promise(resolve => {
                     logger.info(`Reached deep sleep target limit (${timeouts.deepSleepEvery}) - ` +
                         `Sleeping for ${randomDeepSleepDuration} minutes`);
@@ -299,7 +323,6 @@ async function probeAccountHealth(client) {
     await new Promise(resolve => setTimeout(resolve, 30 * 1000));
 
     for (;;) {
-
         logger.info("{{{DEVICE HEALTH PROBE}}}: Probing account status...");
         const accStatus = await client.getHostDevice().catch(err => {
             logger.error("Error trying to get device status");
