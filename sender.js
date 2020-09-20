@@ -151,8 +151,9 @@ async function massSend(client) {
 
     logger.info(`Send list has a total of ${sendList.contacts.length} targets`)
 
+    const startingIndex = sendListIndex
     // Iterates through contact list from JSON
-    for (let contact of sendList.contacts) {
+    for (let contact of sendList.contacts.slice(startingIndex)) {
         ++sendListIndex;
         logger.info(`Send Job Progress: Currently at target ${sendListIndex}`+
             ` out of ${sendList.contacts.length}`);
