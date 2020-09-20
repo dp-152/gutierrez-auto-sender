@@ -298,6 +298,8 @@ async function massSend(client) {
 async function probeAccountHealth(client) {
     logger.info("{{{DEVICE HEALTH PROBE}}}: Waiting 30 seconds before initial probe...");
     await new Promise(resolve => setTimeout(resolve, 30 * 1000));
+    let disconnectCount = 0;
+    let probeTimeout = 5;
 
     for (;;) {
         logger.info("{{{DEVICE HEALTH PROBE}}}: Probing account status...");
@@ -307,6 +309,8 @@ async function probeAccountHealth(client) {
         });
 
         if (accStatus.connected) {
+            disconnectCount = 0;
+            probeTimeout = 5;
             logger.info("{{{DEVICE HEALTH PROBE}}}: Device is connected");
             let isPlugged = accStatus.plugged ? " and charging..." : ""
             logger.info(`{{{DEVICE HEALTH PROBE}}}: Battery is at ${accStatus.battery}%${isPlugged}`);
@@ -316,16 +320,25 @@ async function probeAccountHealth(client) {
                 logger.error("{{{DEVICE HEALTH PROBE}}}: BATTERY LEVEL CRITICAL!!!" +
                     " PLUG THE PHONE IMMEDIATELY!");
         }
-        else
+
+        else {
             logger.error("{{{DEVICE HEALTH PROBE}}}: Device is disconnected!!" +
                 " Please check device status manually!");
-                // TODO: Do something when the device is disconnected.
-                // Ask for new auth and resume send list from last sent? If so, how???
-                // nightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmarenightmare
+            if (disconnectCount < 5) {
+                ++disconnectCount;
+                probeTimeout = 1;
+            }
+            else {
+                logger.error("{{{DEVICE HEALTH PROBE}}}: DEVICE HAS BEEN OFFLINE FOR MORE THAN 5 PROBES!!!");
+                logger.error("{{{DEVICE HEALTH PROBE}}}: WILL INITIATE SELF-DESTRUCT SEQUENCE");
 
-        logger.info("{{{DEVICE HEALTH PROBE}}}: Will probe account status again in 1 minute")
+            }
+        }
 
-        await new Promise( resolve => {setTimeout(resolve, 1 * 60 * 1000);})
+        logger.info(`{{{DEVICE HEALTH PROBE}}}: Will probe account status again in ${probeTimeout}`+
+            ` minute${probeTimeout != 1 ? "s" : ""}`);
+
+        await new Promise( resolve => {setTimeout(resolve, probeTimeout * 60 * 1000);})
             .catch(err => {
             logger.error("Error sending timeout for health probe");
             logger.error(err);
