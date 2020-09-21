@@ -19,6 +19,7 @@ let settDef = {
       deep_sleep_duration: 10
     },
     relay: {
+      enabled: false,
       number: "5541900000000",
       match: "2",
       reply_onmatch: "Your phone number will be removed. Thanks from Venom 🕷",
@@ -128,12 +129,19 @@ function checkParameters(obj) {
   }
 
   if (sKeys[2]) {
-    if (obj.relay.number === undefined) {
+    if (obj.relay.enabled === undefined) {
       result.relay = {};
-      result.relay.number = settDef.relay.number;
+      result.relay.enabled = settDef.relay.enabled;
     }
-    else
+    else {
       result.relay = obj.relay;
+      result.relay.enabled = obj.relay.enabled.toLowerCase() === 'true'
+    }
+
+    if (obj.relay.number === undefined)
+      result.relay.number = settDef.relay.number;
+    else
+      result.relay.number = obj.relay.number;
 
     if (obj.relay.match === undefined)
       result.relay.match = settDef.relay.match;
