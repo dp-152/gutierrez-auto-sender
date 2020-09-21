@@ -403,10 +403,11 @@ function createVenom(instanceName) {
                     logger.error(err);
                 });
 
-            probeAccountHealth(client).catch(err => {
-                logger.error("Error trying to send probe thread");
-                logger.error(err);
-            });
+            probeAccountHealth(client)
+                .catch(err => {
+                    logger.error("Error trying to send probe thread");
+                    logger.error(err);
+                });
 
         }).catch((err) => {
         logger.error('Error trying to start a Venom Instance.');
