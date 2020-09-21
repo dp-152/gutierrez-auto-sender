@@ -12,7 +12,8 @@ const {
     readTextfromFiles,
     replaceKeys,
     getDateString,
-    percentualVariation
+    percentualVariation,
+    roundToPrecision
 } = require('./sys/helper');
 
 /*
