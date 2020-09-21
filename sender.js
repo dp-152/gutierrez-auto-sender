@@ -388,11 +388,12 @@ function createVenom(instanceName) {
     venom.create(instanceName).then(
         (client) => {
             // Start listener thread
-            listener(client).then()
-                .catch((err) => {
-                    logger.error('Error trying to start a listener thread.');
-                    logger.error(err);
-                });
+            if (settings.relay.enabled)
+                listener(client).then()
+                    .catch((err) => {
+                        logger.error('Error trying to start a listener thread.');
+                        logger.error(err);
+                    });
 
             // Start mass send job
             massSend(client)
