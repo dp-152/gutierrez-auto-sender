@@ -41,6 +41,7 @@ logger.info(getDateString(new Date(), `
 logger.info("Loading parameters...");
 
 logger.info("Parameters loaded.");
+logger.info(`Instance name is ${settings.instance.name}`);
 logger.info(`Send list is ${sendListDir}`);
 logger.info(`Settings file is ${settingsFile}`);
 logger.info("Loaded settings: " + JSON.stringify(settings));
@@ -67,8 +68,7 @@ createVenom(globalInstanceName);
 // Listener thread
 // TODO: Implement device health check (battery, service, connection)
 async function listener(client) {
-    logger.log('info',`Instance name: ${settings.instance.name}`);
-    logger.log('info',"Running listener for account");
+    logger.info("Running listener for account");
     client.onMessage((message => {
 
         // TODO: Add option to use regex match instead of string match
@@ -396,7 +396,7 @@ function createVenom(instanceName) {
 
             // Start mass send job
             massSend(client)
-                .then(() => logger.log('info',"Mass send job completed"))
+                .then(() => logger.info("Mass send job completed"))
                 .catch((err) => {
                     logger.error('Error trying to start a Mass Send Job.');
                     logger.error(err);
