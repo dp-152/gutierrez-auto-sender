@@ -102,4 +102,17 @@ function percentualVariation(baseValue, variance, float = true){
     return result;
 }
 
-module.exports = {typeTime, loadCampaignFiles, readTextfromFiles, replaceKeys, getDateString, percentualVariation}
+function roundToPrecision(value, precision) {
+    var multiplier = Math.pow(10, precision || 0);
+    return Math.round(value * multiplier) / multiplier;
+}
+
+module.exports = {
+    typeTime,
+    loadCampaignFiles,
+    readTextfromFiles,
+    replaceKeys,
+    getDateString,
+    percentualVariation,
+    roundToPrecision
+}
