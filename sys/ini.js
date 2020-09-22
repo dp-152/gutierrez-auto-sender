@@ -136,7 +136,7 @@ function checkParameters(obj) {
     }
     else {
       result.relay = obj.relay;
-      result.relay.enabled = obj.relay.enabled.toLowerCase() === 'true'
+      result.relay.enabled = obj.relay.enabled
     }
 
     if (obj.relay.number === undefined)
