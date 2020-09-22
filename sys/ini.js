@@ -27,7 +27,7 @@ let settDef = {
       relay_message_format: "From: {{phone}}\nCampaign: {{campaign}}\nMessage: {{message}}"
     },
     debug: {
-      console_level: 'error',
+      console_level: 'info',
       file_level: 'info'
     }
 };
@@ -40,6 +40,7 @@ const ini_init = (configFile = argv.config) => {
     settings = checkParameters(settings);
   } catch (e) {
     console.error('Error trying to fetch data from config file.');
+    console.error(e);
     console.info('Falling back to default parameters');
     settings = settDef;
   }
@@ -170,7 +171,7 @@ function checkParameters(obj) {
   if (sKeys[3]) {
     if (obj.debug.console_level === undefined) {
       result.debug = {};
-      result.debug.console_level = 'error';
+      result.debug.console_level = 'info';
     }else{
       result.debug = obj.debug;
     }
@@ -181,7 +182,7 @@ function checkParameters(obj) {
 
   } else {
     result.debug = {
-      console_level: 'error',
+      console_level: 'info',
       file_level: 'info'
     }
   }
