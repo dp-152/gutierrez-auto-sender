@@ -136,8 +136,8 @@ function checkParameters(obj) {
     }
     else {
       result.relay = obj.relay;
-      result.relay.enabled = obj.relay.enabled.toLowerCase() === 'true'
-    }
+      result.relay.enabled = typeof(obj.relay.enabled) === "boolean" ? obj.relay.enabled : false;
+     }
 
     if (obj.relay.number === undefined)
       result.relay.number = settDef.relay.number;

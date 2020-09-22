@@ -12,7 +12,8 @@ const {
     readTextfromFiles,
     replaceKeys,
     getDateString,
-    percentualVariation
+    percentualVariation,
+    roundToPrecision
 } = require('./sys/helper');
 
 /*
@@ -236,7 +237,7 @@ async function massSend(client) {
                 const randomBetweenFiles = percentualVariation(timeouts.betweenFiles, timeouts.typingVariance)
                 await new Promise(resolve => {
                     logger.info(
-                        `Attachment timeout is ${randomBetweenFiles} seconds - sleeping`);
+                        `Attachment timeout is ${roundToPrecision(randomBetweenFiles, 2)} seconds - sleeping`);
                     setTimeout(resolve,
                         randomBetweenFiles * 1000);
                 });
@@ -271,7 +272,7 @@ async function massSend(client) {
                     const randomBetweenTargets = percentualVariation(timeouts.betweenTargets, timeouts.typingVariance);
                     await new Promise(resolve => {
                         logger.info(
-                            `Waiting ${randomBetweenTargets} seconds before going to next contact`)
+                            `Waiting ${roundToPrecision(randomBetweenTargets, 2)} seconds before going to next contact`)
                         setTimeout(resolve, randomBetweenTargets * 1000);
                     });
                 }
@@ -281,7 +282,7 @@ async function massSend(client) {
                     const randomSleepDuration = percentualVariation(timeouts.sleepDuration, timeouts.typingVariance);
                     await new Promise(resolve => {
                         logger.info(`Reached sleep target limit (${timeouts.sleepEvery}) - ` +
-                            `Sleeping for ${randomSleepDuration} seconds`);
+                            `Sleeping for ${roundToPrecision(randomSleepDuration, 2)} seconds`);
                         setTimeout(resolve, randomSleepDuration * 1000);
                     });
                 }
@@ -297,7 +298,7 @@ async function massSend(client) {
                 );
                 await new Promise(resolve => {
                     logger.info(`Reached deep sleep target limit (${timeouts.deepSleepEvery}) - ` +
-                        `Sleeping for ${randomDeepSleepDuration} minutes`);
+                        `Sleeping for ${roundToPrecision(randomDeepSleepDuration, 2)} minutes`);
                     setTimeout(resolve, randomDeepSleepDuration * 60 * 1000);
                 });
             }
@@ -313,7 +314,7 @@ async function massSend(client) {
         }
 
         logger.info(`Send Job Progress: Sent to target ${sendListIndex} out of ${sendList.contacts.length}`);
-        const jobPercentComplete = Math.round(sendListIndex / sendList.contacts.length * 100 * 10) / 10;
+        const jobPercentComplete = roundToPrecision(sendListIndex / sendList.contacts.length * 100, 2);
         logger.info(`Send Job Progress: Job is ${jobPercentComplete}% complete.`);
     }
 }
