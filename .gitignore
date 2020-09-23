@@ -57,3 +57,6 @@ sendlist.json
 
 # Exclusion for local campaign dir
 campaign/
+
+# Exclusion for updater script
+update.sh
