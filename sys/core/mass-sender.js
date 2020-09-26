@@ -51,7 +51,7 @@ async function massSend(client) {
 
     // TODO: Add option to send links with preview
     // TODO: Add option to send contacts
-    logger.info("Loading campaing text...")
+    logger.info("Loading campaign text...")
     const campaignText = readTextFromFiles(campaignContent.text);
     logger.info("Text loaded")
 
