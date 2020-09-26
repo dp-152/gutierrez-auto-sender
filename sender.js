@@ -1,9 +1,9 @@
 const venom = require('venom-bot');
 const fs = require('fs');
 const { argv } = require('yargs');
-const {ini_init} = require('./sys/ini');
+const { ini_init } = require('./sys/ini');
 const path = require('path');
-const {logger} = require('./sys/logger');
+const { logger, report } = require('./sys/logger');
 const { ReportLog } = require('./sys/reportlog');
 const inifile = require('./sys/ini');
 const {
@@ -73,16 +73,15 @@ async function listener(client) {
     client.onMessage((message => {
 
         // TODO: Add option to use regex match instead of string match
-        if (message.body === settings.relay.match && !message.from.includes('@g.us')){
+        if (message.body === settings.relay.match && !message.from.includes('@g.us')) {
             client.sendText(
-                settings.relay.number + "@c.us",
-                replaceKeys(
-                    settings.relay.relay_message_format,
-                    {
-                        phone: message.from.toString().replace("@c.us", ""),
-                        campaign: campaignName,
-                        message: message.body
-                    })
+                    settings.relay.number + "@c.us",
+                    replaceKeys(
+                        settings.relay.relay_message_format, {
+                            phone: message.from.toString().replace("@c.us", ""),
+                            campaign: campaignName,
+                            message: message.body
+                        })
                 )
                 .catch((err) => {
                     logger.error('Error relaying message.');
@@ -93,8 +92,7 @@ async function listener(client) {
                     logger.error('Error sending a reply.');
                     logger.error(err);
                 });
-        }
-        else {
+        } else {
             client.sendText(message.from, settings.relay.reply_default);
         }
     }));
@@ -107,7 +105,7 @@ async function massSend(client) {
     logger.info("Initializing Mass Sender Thread...")
 
     // Load send list passed as --send argument
-    const sendList = JSON.parse(fs.readFileSync(sendListDir, encoding='utf-8'));
+    const sendList = JSON.parse(fs.readFileSync(sendListDir, encoding = 'utf-8'));
 
     logger.info(`Campaign name is: ${path.dirname(campaignDir)}`);
 
@@ -155,168 +153,175 @@ async function massSend(client) {
     logger.info("Starting mass send job...");
 
     logger.info(`Send list has a total of ${sendList.contacts.length} targets`)
+    report.info({ message: "SendListTotalTargets", total: sendList.contacts.length, timestamp: Math.floor(new Date().getTime() / 1000) });
 
     const startingIndex = sendListIndex
 
     // Iterates through contact list from JSON
     sender_main_loop:
-    for (let contact of sendList.contacts.slice(startingIndex)) {
-        while (!clientIsConnectedFlag){
-            if (client != undefined) {
-                logger.warn("Mass sender thread: Client is disconnected but still alive." +
-                    " Sleeping for 15 seconds");
-                await new Promise(resolve => {setTimeout(resolve, 15 * 1000);});
+        for (let contact of sendList.contacts.slice(startingIndex)) {
+            while (!clientIsConnectedFlag) {
+                if (client != undefined) {
+                    logger.warn("Mass sender thread: Client is disconnected but still alive." +
+                        " Sleeping for 15 seconds");
+                    await new Promise(resolve => { setTimeout(resolve, 15 * 1000); });
+                } else {
+                    logger.crit(`Mass sender thread: Client has been killed.` +
+                        ` Halting mass send at ${sendListIndex} sends`);
+                    break sender_main_loop;
+                }
             }
-            else {
-                logger.crit(`Mass sender thread: Client has been killed.` +
-                    ` Halting mass send at ${sendListIndex} sends`);
-                break sender_main_loop;
-            }
-        }
 
-        ++sendListIndex;
-        logger.info(`Send Job Progress: Currently at target ${sendListIndex}`+
-            ` out of ${sendList.contacts.length}`);
+            ++sendListIndex;
+            logger.info(`Send Job Progress: Currently at target ${sendListIndex}` +
+                ` out of ${sendList.contacts.length}`);
 
-        let targetID = contact.phone + "@c.us";
+            let targetID = contact.phone + "@c.us";
 
-        // Checks if profile is valid. If not, returns int 404
-        let profile = await client.getNumberProfile(targetID)
-            .catch((err) => {
-                logger.error('Error getting profile number.');
-                logger.error(err);
-            });
+            // Checks if profile is valid. If not, returns int 404
+            let profile = await client.getNumberProfile(targetID)
+                .catch((err) => {
+                    logger.error('Error getting profile number.');
+                    logger.error(err);
+                });
 
-        if (profile !== 404) {
-            logger.info(`Retrieved profile data:    - Account: ${profile.id.user}
+            if (profile !== 404) {
+                logger.info(`Retrieved profile data:    - Account: ${profile.id.user}
                                                             - Is business? ${profile.isBusiness}.
                                                             - Can receive messages? ${profile.canReceiveMessage}.`);
 
-            targetID = profile.id._serialized;
+                targetID = profile.id._serialized;
 
-            logger.info(`Target: ${contact.name} - ${profile.id.user}`);
-            logger.info("Started sending to contact");
+                logger.info(`Target: ${contact.name} - ${profile.id.user}`);
+                logger.info("Started sending to contact");
 
-            for (let message of campaignText) {
+                let totalTypingTime = 0;
 
-                message = replaceKeys(message, contact);
+                for (let message of campaignText) {
 
-                client.startTyping(targetID).then()
-                    .catch((err) => {
-                        logger.error('Error trying to start typing.');
-                        logger.error(err);
+                    message = replaceKeys(message, contact);
+
+                    client.startTyping(targetID).then()
+                        .catch((err) => {
+                            logger.error('Error trying to start typing.');
+                            logger.error(err);
+                        });
+                    logger.info("Started typing");
+
+                    await new Promise(resolve => {
+                        let typingTime = typeTime(
+                            message.length,
+                            timeouts.typingWPM,
+                            timeouts.typingVariance
+                        );
+                        totalTypingTime += typingTime;
+                        logger.info(`Typing timeout is ${typingTime}ms - sleeping`);
+                        setTimeout(resolve, typingTime);
                     });
-                logger.info("Started typing");
 
-                await new Promise(resolve => {
-                    let typingTime = typeTime(
-                        message.length,
-                        timeouts.typingWPM,
-                        timeouts.typingVariance
-                    );
-                    logger.info(`Typing timeout is ${typingTime}ms - sleeping`);
-                    setTimeout(resolve, typingTime);
-                });
+                    await client.sendText(targetID, message)
+                        .catch((err) => {
+                            logger.error('Error sending message.');
+                            logger.error(err);
+                        });
+                    logger.info(`Typed text: ${message}`);
 
-                await client.sendText(targetID, message)
-                    .catch((err) => {
-                        logger.error('Error sending message.');
-                        logger.error(err);
-                    });
-                logger.info(`Typed text: ${message}`);
+                    client.stopTyping(targetID).then()
+                        .catch((err) => {
+                            logger.error('Error trying to stop typing.');
+                            logger.error(err);
+                        });
+                    logger.info("Stopped typing");
+                }
 
-                client.stopTyping(targetID).then()
-                    .catch((err) => {
-                        logger.error('Error trying to stop typing.');
-                        logger.error(err);
-                    });
-                logger.info("Stopped typing");
-            }
+                report.info({ message: "TypingTime", total: totalTypingTime, number: contact.phone, timestamp: Math.floor(new Date().getTime() / 1000) });
 
-            for (let attachment of campaignContent.files){
-                const randomBetweenFiles = percentualVariation(timeouts.betweenFiles, timeouts.typingVariance)
-                await new Promise(resolve => {
-                    logger.info(
-                        `Attachment timeout is ${roundToPrecision(randomBetweenFiles, 2)} seconds - sleeping`);
-                    setTimeout(resolve,
-                        randomBetweenFiles * 1000);
-                });
-                logger.info("Sending attachment:");
-                client.sendFile(targetID, attachment, path.basename(attachment))
-                    .catch((err) => {
-                        logger.error('Error trying to send file.');
-                        logger.error(err);
-                    });
-                logger.info(`Sent ${path.basename(attachment)} as file`);
-            }
+                let totalAttachmentTime = 0;
 
-            logger.info("Finished sending to contact");
-
-            logger.info("Writing data to report log.");
-            /** ReportLog
-             * @param {string}  targetID    Phone number
-             * @param {bool}    status      Sent status
-            */
-            finalReport.pushLog(contact.phone, true);
-
-            if (deepSleepEveryCounter < timeouts.deepSleepEvery){
-                ++deepSleepEveryCounter;
-                logger.info(`Current deep sleep count is ${deepSleepEveryCounter},` +
-                            ` up to a max of ${timeouts.deepSleepEvery}`);
-
-                if (sleepEveryCounter < timeouts.sleepEvery){
-                    ++sleepEveryCounter;
-                    logger.info(`Current sleep count is ${sleepEveryCounter},` +
-                        ` up to a max of ${timeouts.sleepEvery}`);
-
-                    const randomBetweenTargets = percentualVariation(timeouts.betweenTargets, timeouts.typingVariance);
+                for (let attachment of campaignContent.files) {
+                    const randomBetweenFiles = percentualVariation(timeouts.betweenFiles, timeouts.typingVariance)
                     await new Promise(resolve => {
                         logger.info(
-                            `Waiting ${roundToPrecision(randomBetweenTargets, 2)} seconds before going to next contact`)
-                        setTimeout(resolve, randomBetweenTargets * 1000);
+                            `Attachment timeout is ${roundToPrecision(randomBetweenFiles, 2)} seconds - sleeping`);
+                        setTimeout(resolve,
+                            randomBetweenFiles * 1000);
                     });
+                    logger.info("Sending attachment:");
+                    client.sendFile(targetID, attachment, path.basename(attachment))
+                        .catch((err) => {
+                            logger.error('Error trying to send file.');
+                            logger.error(err);
+                        });
+                    logger.info(`Sent ${path.basename(attachment)} as file`);
+
+                    totalAttachmentTime += Math.floor(randomBetweenFiles * 1000);
                 }
-                else if (sleepEveryCounter === timeouts.sleepEvery){
+
+                report.info({ message: "AttachmentTime", total: totalAttachmentTime, number: contact.phone, timestamp: Math.floor(new Date().getTime() / 1000) });
+
+                logger.info("Finished sending to contact");
+
+                logger.info("Writing data to report log.");
+                /** ReportLog
+                 * @param {string}  targetID    Phone number
+                 * @param {bool}    status      Sent status
+                 */
+                finalReport.pushLog(contact.phone, true);
+
+                if (deepSleepEveryCounter < timeouts.deepSleepEvery) {
+                    ++deepSleepEveryCounter;
+                    logger.info(`Current deep sleep count is ${deepSleepEveryCounter},` +
+                        ` up to a max of ${timeouts.deepSleepEvery}`);
+
+                    if (sleepEveryCounter < timeouts.sleepEvery) {
+                        ++sleepEveryCounter;
+                        logger.info(`Current sleep count is ${sleepEveryCounter},` +
+                            ` up to a max of ${timeouts.sleepEvery}`);
+
+                        const randomBetweenTargets = percentualVariation(timeouts.betweenTargets, timeouts.typingVariance);
+                        await new Promise(resolve => {
+                            logger.info(
+                                `Waiting ${roundToPrecision(randomBetweenTargets, 2)} seconds before going to next contact`)
+                            setTimeout(resolve, randomBetweenTargets * 1000);
+                        });
+                    } else if (sleepEveryCounter === timeouts.sleepEvery) {
+                        sleepEveryCounter = 0;
+
+                        const randomSleepDuration = percentualVariation(timeouts.sleepDuration, timeouts.typingVariance);
+                        await new Promise(resolve => {
+                            logger.info(`Reached sleep target limit (${timeouts.sleepEvery}) - ` +
+                                `Sleeping for ${roundToPrecision(randomSleepDuration, 2)} seconds`);
+                            setTimeout(resolve, randomSleepDuration * 1000);
+                        });
+                    }
+                } else if (deepSleepEveryCounter === timeouts.deepSleepEvery) {
+                    deepSleepEveryCounter = 0;
                     sleepEveryCounter = 0;
 
-                    const randomSleepDuration = percentualVariation(timeouts.sleepDuration, timeouts.typingVariance);
+                    const randomDeepSleepDuration = percentualVariation(
+                        timeouts.deepSleepDuration,
+                        timeouts.typingVariance
+                    );
                     await new Promise(resolve => {
-                        logger.info(`Reached sleep target limit (${timeouts.sleepEvery}) - ` +
-                            `Sleeping for ${roundToPrecision(randomSleepDuration, 2)} seconds`);
-                        setTimeout(resolve, randomSleepDuration * 1000);
+                        logger.info(`Reached deep sleep target limit (${timeouts.deepSleepEvery}) - ` +
+                            `Sleeping for ${roundToPrecision(randomDeepSleepDuration, 2)} minutes`);
+                        setTimeout(resolve, randomDeepSleepDuration * 60 * 1000);
                     });
                 }
+
+            } else {
+                // TODO: Push to DB when contact is invalid
+                logger.info(`${contact.name} ${contact.phone} - Invalid or nonexistant contact - skipping`);
+                report.info({ message: "Invalid or nonexistant contact - skipping", number: contact.phone, status: false, timestamp: Math.floor(new Date().getTime() / 1000) });
+
+                /** ReportLog */
+                finalReport.pushLog(contact.phone, false);
             }
 
-            else if (deepSleepEveryCounter === timeouts.deepSleepEvery){
-                deepSleepEveryCounter = 0;
-                sleepEveryCounter = 0;
-
-                const randomDeepSleepDuration = percentualVariation(
-                    timeouts.deepSleepDuration,
-                    timeouts.typingVariance
-                );
-                await new Promise(resolve => {
-                    logger.info(`Reached deep sleep target limit (${timeouts.deepSleepEvery}) - ` +
-                        `Sleeping for ${roundToPrecision(randomDeepSleepDuration, 2)} minutes`);
-                    setTimeout(resolve, randomDeepSleepDuration * 60 * 1000);
-                });
-            }
-
+            logger.info(`Send Job Progress: Sent to target ${sendListIndex} out of ${sendList.contacts.length}`);
+            const jobPercentComplete = roundToPrecision(sendListIndex / sendList.contacts.length * 100, 2);
+            logger.info(`Send Job Progress: Job is ${jobPercentComplete}% complete.`);
         }
-
-        else {
-            // TODO: Push to DB when contact is invalid
-            logger.info(`${contact.name} ${contact.phone} - Invalid or nonexistant contact - skipping`);
-
-            /** ReportLog */
-            finalReport.pushLog(contact.phone,false);
-        }
-
-        logger.info(`Send Job Progress: Sent to target ${sendListIndex} out of ${sendList.contacts.length}`);
-        const jobPercentComplete = roundToPrecision(sendListIndex / sendList.contacts.length * 100, 2);
-        logger.info(`Send Job Progress: Job is ${jobPercentComplete}% complete.`);
-    }
 }
 
 async function probeAccountHealth(client) {
@@ -344,17 +349,14 @@ async function probeAccountHealth(client) {
             else if (accStatus.battery < 15 && !accStatus.plugged)
                 logger.error("{{{DEVICE HEALTH PROBE}}}: BATTERY LEVEL CRITICAL!!!" +
                     " PLUG THE PHONE IMMEDIATELY!");
-        }
-
-        else {
+        } else {
             clientIsConnectedFlag = false;
             logger.error("{{{DEVICE HEALTH PROBE}}}: Device is disconnected!!" +
                 " Please check device status manually!");
             if (disconnectCount < 5) {
                 ++disconnectCount;
                 probeTimeout = 1;
-            }
-            else {
+            } else {
                 logger.error("{{{DEVICE HEALTH PROBE}}}: DEVICE HAS BEEN OFFLINE FOR MORE THAN 5 PROBES!!!");
                 logger.warn("{{{DEVICE HEALTH PROBE}}}: WILL INITIATE SELF-DESTRUCT SEQUENCE");
                 await destroyVenom(client)
@@ -370,14 +372,14 @@ async function probeAccountHealth(client) {
             }
         }
 
-        logger.info(`{{{DEVICE HEALTH PROBE}}}: Will probe account status again in ${probeTimeout}`+
+        logger.info(`{{{DEVICE HEALTH PROBE}}}: Will probe account status again in ${probeTimeout}` +
             ` minute${probeTimeout != 1 ? "s" : ""}`);
 
-        await new Promise( resolve => {setTimeout(resolve, probeTimeout * 60 * 1000);})
+        await new Promise(resolve => { setTimeout(resolve, probeTimeout * 60 * 1000); })
             .catch(err => {
-            logger.error("Error sending timeout for health probe");
-            logger.error(err);
-        });
+                logger.error("Error sending timeout for health probe");
+                logger.error(err);
+            });
     }
 
 }
@@ -391,10 +393,10 @@ function createVenom(instanceName) {
             // Start listener thread
             if (settings.relay.enabled)
                 listener(client).then()
-                    .catch((err) => {
-                        logger.error('Error trying to start a listener thread.');
-                        logger.error(err);
-                    });
+                .catch((err) => {
+                    logger.error('Error trying to start a listener thread.');
+                    logger.error(err);
+                });
 
             // Start mass send job
             massSend(client)
@@ -435,7 +437,7 @@ async function destroyVenom(client) {
 
 async function restartVenom() {
     logger.warn("Sleeping for 30 seconds before starting a new Venom instance");
-    await new Promise(resolve => {setTimeout(resolve, 30 * 1000);}).catch(err => process.abort(err));
+    await new Promise(resolve => { setTimeout(resolve, 30 * 1000); }).catch(err => process.abort(err));
     console.log("Press any key to continue...");
     process.stdin.once('data', () => {
         globalInstanceName = `temp_${Date.now().toString(16)}`;
