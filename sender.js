@@ -1,6 +1,5 @@
 const venom = require('venom-bot');
 const fs = require('fs');
-const { argv } = require('yargs');
 const { ini_init } = require('./sys/ini');
 const path = require('path');
 const { logger, report } = require('./sys/logger');
@@ -20,14 +19,6 @@ const {
     TODO:
         - client.onMessage listener for send list auto removal
  */
-
-// Load required files from CLI arguments
-
-const sendListDir = argv.list;
-const settingsFile = argv.config;
-const settings = ini_init(settingsFile);
-const campaignDir = argv.dir;
-const campaignName = path.basename(campaignDir);
 
 logger.info('Initializing server...');
 logger.info(getDateString(new Date(), `
@@ -49,13 +40,6 @@ logger.info("Loaded settings: " + JSON.stringify(settings));
 logger.info(`Campaign dir is ${campaignDir}`);
 logger.info(`Campaign name is ${campaignName}`);
 
-// Setting counter for send list index position
-// Declared in global scope to keep it safe from venom thread destruction
-let sendListIndex = 0;
-
-// Setting global scope WhatsApp connected flag
-// Will cause mass sender thread to sleep while false
-let clientIsConnectedFlag = undefined;
 
 // First init of Venom instance - instance name inherited from ini file [instance] name = string
 // TODO: Get login status of account
