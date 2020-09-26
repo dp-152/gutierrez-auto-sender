@@ -6,7 +6,7 @@ const {
     getDateString,
     loadCampaignFiles,
     percentualVariation,
-    readTextfromFiles,
+    readTextFromFiles,
     roundToPrecision,
     replaceKeys,
     typeTime
@@ -52,7 +52,7 @@ async function massSend(client) {
     // TODO: Add option to send links with preview
     // TODO: Add option to send contacts
     logger.info("Loading campaing text...")
-    const campaignText = readTextfromFiles(campaignContent.text);
+    const campaignText = readTextFromFiles(campaignContent.text);
     logger.info("Text loaded")
 
     // Sleep for 5 seconds after init, before starting send job

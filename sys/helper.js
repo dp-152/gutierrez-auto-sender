@@ -37,7 +37,7 @@ function loadCampaignFiles(dir){
 }
 
 // Reads text from acquired text files array
-function readTextfromFiles(textFiles){
+function readTextFromFiles(textFiles){
 
     let result = '';
     textFiles.forEach(file => {
@@ -110,7 +110,7 @@ function roundToPrecision(value, precision) {
 module.exports = {
     typeTime,
     loadCampaignFiles,
-    readTextfromFiles,
+    readTextFromFiles,
     replaceKeys,
     getDateString,
     percentualVariation,
