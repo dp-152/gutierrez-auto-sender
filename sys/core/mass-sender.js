@@ -14,7 +14,8 @@ const {
 const {
     sendListFile,
     campaignDir,
-    settings
+    settings,
+    global
 } = require('../global');
 
 // Mass sender thread
@@ -73,25 +74,25 @@ async function massSend(client) {
     logger.info(`Send list has a total of ${sendList.contacts.length} targets`)
     report.info({ message: "SendListTotalTargets", total: sendList.contacts.length, timestamp: Math.floor(new Date().getTime() / 1000) });
 
-    const startingIndex = sendListIndex
+    const startingIndex = global.vars.sendListIndex
 
     // Iterates through contact list from JSON
     sender_main_loop:
         for (let contact of sendList.contacts.slice(startingIndex)) {
-            while (!clientIsConnectedFlag) {
+            while (!global.vars.clientIsConnectedFlag) {
                 if (client != undefined) {
                     logger.warn("Mass sender thread: Client is disconnected but still alive." +
                         " Sleeping for 15 seconds");
                     await new Promise(resolve => { setTimeout(resolve, 15 * 1000); });
                 } else {
                     logger.crit(`Mass sender thread: Client has been killed.` +
-                        ` Halting mass send at ${sendListIndex} sends`);
+                        ` Halting mass send at ${global.vars.sendListIndex} sends`);
                     break sender_main_loop;
                 }
             }
 
-            ++sendListIndex;
-            logger.info(`Send Job Progress: Currently at target ${sendListIndex}` +
+            ++global.vars.sendListIndex;
+            logger.info(`Send Job Progress: Currently at target ${global.vars.sendListIndex}` +
                 ` out of ${sendList.contacts.length}`);
 
             let targetID = contact.phone + "@c.us";
@@ -236,8 +237,8 @@ async function massSend(client) {
                 finalReport.pushLog(contact.phone, false);
             }
 
-            logger.info(`Send Job Progress: Sent to target ${sendListIndex} out of ${sendList.contacts.length}`);
-            const jobPercentComplete = roundToPrecision(sendListIndex / sendList.contacts.length * 100, 2);
+            logger.info(`Send Job Progress: Sent to target ${global.vars.sendListIndex} out of ${sendList.contacts.length}`);
+            const jobPercentComplete = roundToPrecision(global.vars.sendListIndex / sendList.contacts.length * 100, 2);
             logger.info(`Send Job Progress: Job is ${jobPercentComplete}% complete.`);
         }
 }

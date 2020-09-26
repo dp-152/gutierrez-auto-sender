@@ -16,10 +16,28 @@ module.exports = {
     campaignName,
 }
 
-// Setting counter for send list index position
-// Declared in global scope to keep it safe from venom thread destruction
-let sendListIndex = 0;
+let global = {
+    vars: {
+        // Setting counter for send list index position
+        // Declared in global scope to keep it safe from venom thread destruction
+        _sendListIndex: 0,
+        get sendListIndex() {
+            return this._sendListIndex;
+        },
+        set sendListIndex(i) {
+            this._sendListIndex = i;
+        },
 
-// Setting global scope WhatsApp connected flag
-// Will cause mass sender thread to sleep while false
-let clientIsConnectedFlag = undefined;
+        // Setting global scope WhatsApp connected flag
+        // Will cause mass sender thread to sleep while false
+        _clientIsConnectedFlag: undefined,
+        get clientIsConnectedFlag() {
+            return this._clientIsConnectedFlag;
+        },
+        set clientIsConnectedFlag(f) {
+            this._clientIsConnectedFlag = f;
+        }
+    }
+}
+
+module.exports = global;
