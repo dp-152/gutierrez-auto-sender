@@ -9,7 +9,7 @@ async function massSend(client, settings, sendListFile, campaignDir) {
     logger.info("Initializing Mass Sender Thread...")
 
     // Load send list passed as --send argument
-    const sendList = JSON.parse(fs.readFileSync(sendListDir, encoding = 'utf-8'));
+    const sendList = JSON.parse(fs.readFileSync(sendListFile, encoding = 'utf-8'));
 
     logger.info(`Campaign name is: ${path.dirname(campaignDir)}`);
 
