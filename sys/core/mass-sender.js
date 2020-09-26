@@ -11,9 +11,14 @@ const {
     replaceKeys,
     typeTime
 } = require('../helper');
+const {
+    sendListFile,
+    campaignDir,
+    settings
+} = require('../global');
 
 // Mass sender thread
-async function massSend(client, settings, sendListFile, campaignDir) {
+async function massSend(client) {
 
     logger.info("Initializing Mass Sender Thread...")
 
