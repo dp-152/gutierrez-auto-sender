@@ -1,3 +1,8 @@
+const fs = require('fs');
+const path = require('path');
+const {getDateString} = require("../helper");
+const { logger, report } = require('../logger');
+
 // Mass sender thread
 async function massSend(client) {
 
