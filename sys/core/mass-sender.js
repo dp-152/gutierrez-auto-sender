@@ -1,7 +1,16 @@
 const fs = require('fs');
 const path = require('path');
-const {getDateString} = require("../helper");
+const {ReportLog} = require("../reportlog");
 const { logger, report } = require('../logger');
+const {
+    getDateString,
+    loadCampaignFiles,
+    percentualVariation,
+    readTextfromFiles,
+    roundToPrecision,
+    replaceKeys,
+    typeTime
+} = require('../helper');
 
 // Mass sender thread
 async function massSend(client, settings, sendListFile, campaignDir) {
@@ -168,7 +177,7 @@ async function massSend(client, settings, sendListFile, campaignDir) {
                 logger.info("Writing data to report log.");
                 /** ReportLog
                  * @param {string}  targetID    Phone number
-                 * @param {bool}    status      Sent status
+                 * @param {boolean}    status      Sent status
                  */
                 finalReport.pushLog(contact.phone, true);
 
