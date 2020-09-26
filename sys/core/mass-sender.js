@@ -4,7 +4,7 @@ const {getDateString} = require("../helper");
 const { logger, report } = require('../logger');
 
 // Mass sender thread
-async function massSend(client) {
+async function massSend(client, settings, sendListFile, campaignDir) {
 
     logger.info("Initializing Mass Sender Thread...")
 
