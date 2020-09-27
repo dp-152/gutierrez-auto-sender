@@ -9,7 +9,8 @@ const {
     sendListFile,
     settingsFile,
     campaignDir,
-    campaignName
+    campaignName,
+    global
 } = require('./sys/global');
 const massSend = require('./sys/core/mass-sender');
 
@@ -95,7 +96,7 @@ async function probeAccountHealth(client) {
         });
 
         if (accStatus.connected) {
-            clientIsConnectedFlag = true;
+            global.vars.clientIsConnectedFlag = true;
             disconnectCount = 0;
             probeTimeout = 5;
             logger.info("{{{DEVICE HEALTH PROBE}}}: Device is connected");
@@ -107,7 +108,7 @@ async function probeAccountHealth(client) {
                 logger.error("{{{DEVICE HEALTH PROBE}}}: BATTERY LEVEL CRITICAL!!!" +
                     " PLUG THE PHONE IMMEDIATELY!");
         } else {
-            clientIsConnectedFlag = false;
+            global.vars.clientIsConnectedFlag = false;
             logger.error("{{{DEVICE HEALTH PROBE}}}: Device is disconnected!!" +
                 " Please check device status manually!");
             if (disconnectCount < 5) {
@@ -143,7 +144,7 @@ async function probeAccountHealth(client) {
 
 function createVenom(instanceName) {
 
-    clientIsConnectedFlag = true;
+    global.vars.clientIsConnectedFlag = true;
 
     venom.create(instanceName).then(
         (client) => {
