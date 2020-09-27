@@ -6,13 +6,8 @@ const { logger, report } = require('./sys/logger');
 const { ReportLog } = require('./sys/reportlog');
 const inifile = require('./sys/ini');
 const {
-    typeTime,
-    loadCampaignFiles,
-    readTextfromFiles,
-    replaceKeys,
     getDateString,
-    percentualVariation,
-    roundToPrecision
+    replaceKeys,
 } = require('./sys/helper');
 
 /*
