@@ -38,6 +38,15 @@ let global = {
         },
         set instanceName(n) {
             this._instanceName = n;
+        },
+
+        // Saving self destruct flag to prevent a circular dependency issue
+        _flagSelfDestruct: false,
+        get flagSelfDestruct() {
+            return this._flagSelfDestruct;
+        },
+        set flagSelfDestruct(f) {
+            this._flagSelfDestruct = f;
         }
     }
 }

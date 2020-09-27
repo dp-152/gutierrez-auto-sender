@@ -1,9 +1,5 @@
 const { logger } = require('../logger');
 const { global } = require('../global');
-const {
-    destroyVenom,
-    restartVenom
-} = require('./thread-utils');
 
 async function probeAccountHealth(client) {
     logger.info("{{{DEVICE HEALTH PROBE}}}: Waiting 30 seconds before initial probe...");
@@ -38,17 +34,7 @@ async function probeAccountHealth(client) {
                 ++disconnectCount;
                 probeTimeout = 1;
             } else {
-                logger.error("{{{DEVICE HEALTH PROBE}}}: DEVICE HAS BEEN OFFLINE FOR MORE THAN 5 PROBES!!!");
-                logger.warn("{{{DEVICE HEALTH PROBE}}}: WILL INITIATE SELF-DESTRUCT SEQUENCE");
-                await destroyVenom(client)
-                    .then(success => {
-                        logger.warn("{{{DEVICE HEALTH PROBE}}}: THREAD DESTROYED!");
-                        logger.warn("{{{DEVICE HEALTH PROBE}}}: Waiting for user input to start new thread...");
-                        restartVenom();
-                    })
-                    .catch(err => {
-                        logger.error("Error trying to destroy Venom thread");
-                    });
+                global.vars.flagSelfDestruct = true;
                 break;
             }
         }

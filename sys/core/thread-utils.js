@@ -12,10 +12,10 @@ const {
 
 function createVenom(instanceName) {
 
-    global.vars.clientIsConnectedFlag = true;
-
     venom.create(instanceName).then(
         (client) => {
+            global.vars.clientIsConnectedFlag = true;
+
             // Start listener thread
             if (settings.relay.enabled)
                 listener(client).then()
@@ -38,6 +38,12 @@ function createVenom(instanceName) {
                     logger.error(err);
                 });
 
+            checkSelfDestructState(client)
+                .catch(err => {
+                    logger.error( "Error when dispatching self-destruct checker");
+                    logger.error(err);
+                });
+
         }).catch((err) => {
         logger.error('Error trying to start a Venom Instance.');
         logger.error(err);
@@ -45,30 +51,55 @@ function createVenom(instanceName) {
 }
 
 async function destroyVenom(client) {
-    logger.warn("Destroy sequence has been initiated.");
-    logger.warn(`Current instance is ${global.vars.instanceName}`);
-    logger.warn(`Current campaign is ${campaignName}`);
-    logger.warn(`Current send list is ${sendListFile}`);
-    logger.warn(`Current sendList index is ${global.vars.sendListIndex}`);
-    logger.warn(`Will now close instance ${global.vars.instanceName} - session ID: ${client.page._client._sessionId}`);
+    global.vars.flagSelfDestruct = false;
+    logger.warn("{{{SELF-DESTRUCT}}}: Destroy sequence has been initiated.");
+    logger.warn(`{{{SELF-DESTRUCT}}}: Current instance is ${global.vars.instanceName}`);
+    logger.warn(`{{{SELF-DESTRUCT}}}: Current campaign is ${campaignName}`);
+    logger.warn(`{{{SELF-DESTRUCT}}}: Current send list is ${sendListFile}`);
+    logger.warn(`{{{SELF-DESTRUCT}}}: Current sendList index is ${global.vars.sendListIndex}`);
+    logger.warn(`{{{SELF-DESTRUCT}}}: Will now close instance ${global.vars.instanceName} - session ID: ${client.page._client._sessionId}`);
     await client.close()
-        .then(success => {
-            logger.info(`Closed thread ${global.vars.instanceName} successfully - ${success}`);
+        .then(() => {
+            logger.info(`{{{SELF-DESTRUCT}}}: Closed thread ${global.vars.instanceName} successfully`);
         })
         .catch(error => {
-            logger.error("FUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCK");
+            logger.error("{{{SELF-DESTRUCT}}}: FUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCK");
             logger.error(error);
         });
 }
 
 async function restartVenom() {
-    logger.warn("Sleeping for 30 seconds before starting a new Venom instance");
+    logger.warn("{{{SELF-DESTRUCT}}}: Sleeping for 30 seconds before starting a new Venom instance");
     await new Promise(resolve => { setTimeout(resolve, 30 * 1000); }).catch( () => process.abort());
+    logger.warn("{{{SELF-DESTRUCT}}}: Waiting for user input to start new thread...");
     console.log("Press any key to continue...");
     process.stdin.once('data', () => {
         global.vars.instanceName = `temp_${Date.now().toString(16)}`;
         createVenom(global.vars.instanceName);
     });
+}
+
+async function checkSelfDestructState(client) {
+    for (;;) {
+        if (global.vars.flagSelfDestruct) {
+            await selfDestruct(client);
+            break;
+        }
+        await new Promise(r => setTimeout(r, 1000));
+    }
+}
+
+async function selfDestruct(client) {
+    logger.error("{{{SELF-DESTRUCT}}}: DEVICE HAS BEEN OFFLINE FOR MORE THAN 5 PROBES!!!");
+    logger.warn("{{{SELF-DESTRUCT}}}: WILL INITIATE SELF-DESTRUCT SEQUENCE");
+    await destroyVenom(client)
+        .then(success => {
+            logger.warn("{{{SELF-DESTRUCT}}}: THREAD DESTROYED!");
+            restartVenom();
+        })
+        .catch(err => {
+            logger.error("{{{SELF-DESTRUCT}}}: Error trying to destroy Venom thread");
+        });
 }
 
 module.exports = {
