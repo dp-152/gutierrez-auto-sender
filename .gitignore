@@ -60,3 +60,6 @@ campaign/
 
 # Exclusion for updater script
 update.sh
+
+#Exclusion for logs dir
+logs/
