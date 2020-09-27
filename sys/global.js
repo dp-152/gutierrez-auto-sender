@@ -9,14 +9,6 @@ const settings = ini_init(settingsFile);
 const campaignDir = argv.dir;
 const campaignName = path.basename(campaignDir);
 
-module.exports = {
-    sendListFile,
-    settings,
-    settingsFile,
-    campaignDir,
-    campaignName,
-}
-
 let global = {
     vars: {
         // Setting counter for send list index position
@@ -40,5 +32,11 @@ let global = {
         }
     }
 }
-
-module.exports = global;
+module.exports = {
+    sendListFile,
+    settings,
+    settingsFile,
+    campaignDir,
+    campaignName,
+    global
+}
