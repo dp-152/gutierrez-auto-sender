@@ -44,10 +44,7 @@ logger.info(`Campaign name is ${campaignName}`);
 // TODO: Get login status of account
 // TODO: Handle login errors (?)
 
-// Save instance name to global scope
-let globalInstanceName = settings.instance.name;
-
-createVenom(globalInstanceName);
+createVenom(global.vars.instanceName);
 
 // Listener thread
 // TODO: Implement device health check (battery, service, connection)
@@ -178,14 +175,14 @@ function createVenom(instanceName) {
 
 async function destroyVenom(client) {
     logger.warn("Destroy sequence has been initiated.");
-    logger.warn(`Current instance is ${globalInstanceName}`);
+    logger.warn(`Current instance is ${global.vars.instanceName}`);
     logger.warn(`Current campaign is ${campaignName}`);
     logger.warn(`Current send list is ${sendListDir}`);
     logger.warn(`Current sendList index is ${sendListIndex}`);
-    logger.warn(`Will now close instance ${globalInstanceName} - session ID: ${client.page._client._sessionId}`);
+    logger.warn(`Will now close instance ${global.vars.instanceName} - session ID: ${client.page._client._sessionId}`);
     await client.close()
         .then(success => {
-            logger.info(`Closed thread ${globalInstanceName} successfully - ${success}`);
+            logger.info(`Closed thread ${global.vars.instanceName} successfully - ${success}`);
         })
         .catch(error => {
             logger.error("FUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCKFUCK");
@@ -198,7 +195,7 @@ async function restartVenom() {
     await new Promise(resolve => { setTimeout(resolve, 30 * 1000); }).catch(err => process.abort(err));
     console.log("Press any key to continue...");
     process.stdin.once('data', () => {
-        globalInstanceName = `temp_${Date.now().toString(16)}`;
-        createVenom(globalInstanceName);
+        global.vars.instanceName = `temp_${Date.now().toString(16)}`;
+        createVenom(global.vars.instanceName);
     });
 }

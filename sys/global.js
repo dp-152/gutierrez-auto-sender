@@ -29,6 +29,15 @@ let global = {
         },
         set clientIsConnectedFlag(f) {
             this._clientIsConnectedFlag = f;
+        },
+
+        // Save instance name to global scope
+        _instanceName: settings.instance.name,
+        get instanceName() {
+            return this._instanceName;
+        },
+        set instanceName(n) {
+            this._instanceName = n;
         }
     }
 }
