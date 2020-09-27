@@ -24,7 +24,7 @@ async function massSend(client) {
     logger.info("Initializing Mass Sender Thread...")
 
     // Load send list passed as --send argument
-    const sendList = JSON.parse(fs.readFileSync(sendListFile, encoding = 'utf-8'));
+    const sendList = JSON.parse(fs.readFileSync(sendListFile, 'utf-8'));
 
     logger.info(`Campaign name is: ${path.dirname(campaignDir)}`);
 
@@ -80,7 +80,7 @@ async function massSend(client) {
     sender_main_loop:
         for (let contact of sendList.contacts.slice(startingIndex)) {
             while (!global.vars.clientIsConnectedFlag) {
-                if (client != undefined) {
+                if (client !== undefined) {
                     logger.warn("Mass sender thread: Client is disconnected but still alive." +
                         " Sleeping for 15 seconds");
                     await new Promise(resolve => { setTimeout(resolve, 15 * 1000); });
