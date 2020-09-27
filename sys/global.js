@@ -12,6 +12,7 @@ const campaignName = path.basename(campaignDir);
 module.exports = {
     sendListFile,
     settings,
+    settingsFile,
     campaignDir,
     campaignName,
 }

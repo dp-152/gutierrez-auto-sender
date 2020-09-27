@@ -9,6 +9,13 @@ const {
     getDateString,
     replaceKeys,
 } = require('./sys/helper');
+const {
+    settings,
+    sendListFile,
+    settingsFile,
+    campaignDir,
+    campaignName
+} = require('./sys/global');
 
 /*
     TODO:
@@ -29,7 +36,7 @@ logger.info("Loading parameters...");
 
 logger.info("Parameters loaded.");
 logger.info(`Instance name is ${settings.instance.name}`);
-logger.info(`Send list is ${sendListDir}`);
+logger.info(`Send list is ${sendListFile}`);
 logger.info(`Settings file is ${settingsFile}`);
 logger.info("Loaded settings: " + JSON.stringify(settings));
 logger.info(`Campaign dir is ${campaignDir}`);
