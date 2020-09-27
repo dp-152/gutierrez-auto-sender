@@ -1,5 +1,9 @@
 const { logger } = require('../logger');
 const { global } = require('../global');
+const {
+    destroyVenom,
+    restartVenom
+} = require('./thread-utils');
 
 async function probeAccountHealth(client) {
     logger.info("{{{DEVICE HEALTH PROBE}}}: Waiting 30 seconds before initial probe...");
