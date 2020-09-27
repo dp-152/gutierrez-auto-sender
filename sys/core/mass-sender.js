@@ -242,3 +242,5 @@ async function massSend(client) {
             logger.info(`Send Job Progress: Job is ${jobPercentComplete}% complete.`);
         }
 }
+
+module.exports = massSend;

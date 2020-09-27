@@ -11,6 +11,7 @@ const {
     campaignDir,
     campaignName
 } = require('./sys/global');
+const massSend = require('./sys/core/mass-sender');
 
 /*
     TODO:
