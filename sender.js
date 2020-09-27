@@ -1,10 +1,5 @@
 const venom = require('venom-bot');
-const fs = require('fs');
-const { ini_init } = require('./sys/ini');
-const path = require('path');
-const { logger, report } = require('./sys/logger');
-const { ReportLog } = require('./sys/reportlog');
-const inifile = require('./sys/ini');
+const { logger } = require('./sys/logger');
 const {
     getDateString,
     replaceKeys,
