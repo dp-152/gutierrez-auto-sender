@@ -21,12 +21,10 @@ const {
 // Mass sender thread
 async function massSend(client) {
 
-    logger.info("Initializing Mass Sender Thread...")
-
     // Load send list passed as --send argument
     const sendList = JSON.parse(fs.readFileSync(sendListFile, 'utf-8'));
 
-    logger.info(`Campaign name is: ${path.dirname(campaignDir)}`);
+    logger.info(`{{MASS SEND}}: Campaign name is: ${path.dirname(campaignDir)}`);
 
     // Load timeouts
     const timeouts = {
@@ -46,32 +44,33 @@ async function massSend(client) {
 
     // Enumerates send dir text and attachment files from --dir argument
     // Attachment files will be sent in alphabetical order
-    logger.info("Probing campaign dir for text files and attachments...")
+    logger.info("{{MASS SEND}}: Probing campaign dir for text files and attachments...")
     const campaignContent = loadCampaignFiles(campaignDir);
+    logger.info(`{{MASS SEND}}: Loaded campaign files: ${JSON.stringify(campaignContent, null, 4)}`)
 
     // TODO: Add option to send links with preview
     // TODO: Add option to send contacts
-    logger.info("Loading campaign text...")
+    logger.info("{{MASS SEND}}: Loading campaign text...")
     const campaignText = readTextFromFiles(campaignContent.text);
-    logger.info("Text loaded")
+    logger.info("{{MASS SEND}}: Text loaded")
 
     // Sleep for 5 seconds after init, before starting send job
-    logger.info("Sleeping for 5 seconds after init...")
+    logger.info("{{MASS SEND}}: Sleeping for 5 seconds after init...")
     await new Promise(resolve => {
         setTimeout(resolve, 5000);
     });
 
     // Campaign Report Log ;
-    logger.info("Opening report log file")
+    logger.info("{{MASS SEND}}: Opening report log file")
     let logDate = getDateString(
         new Date(),
         "{{year}}-{{month}}-{{day}}_{{hour}}-{{minutes}}-{{seconds}}.{{milliseconds}}");
-    var logPath = campaignDir + `/logs/Report_${settings.instance.name}_${logDate}.csv`;
+    const logPath = campaignDir + `/logs/Report_${settings.instance.name}_${logDate}.csv`;
     let finalReport = new ReportLog(logPath);
 
-    logger.info("Starting mass send job...");
+    logger.info("{{MASS SEND}}: Starting mass send job...");
 
-    logger.info(`Send list has a total of ${sendList.contacts.length} targets`)
+    logger.info(`{{MASS SEND}}: Send list has a total of ${sendList.contacts.length} targets`)
     report.info({ message: "SendListTotalTargets", total: sendList.contacts.length, timestamp: Math.floor(new Date().getTime() / 1000) });
 
     const startingIndex = global.vars.sendListIndex
@@ -81,18 +80,18 @@ async function massSend(client) {
         for (let contact of sendList.contacts.slice(startingIndex)) {
             while (!global.vars.clientIsConnectedFlag) {
                 if (client !== undefined) {
-                    logger.warn("Mass sender thread: Client is disconnected but still alive." +
+                    logger.warn("{{MASS SEND}}: Client is disconnected but still alive." +
                         " Sleeping for 15 seconds");
                     await new Promise(resolve => { setTimeout(resolve, 15 * 1000); });
                 } else {
-                    logger.crit(`Mass sender thread: Client has been killed.` +
+                    logger.crit(`{{MASS SEND}}:  Client has been killed.` +
                         ` Halting mass send at ${global.vars.sendListIndex} sends`);
                     break sender_main_loop;
                 }
             }
 
             ++global.vars.sendListIndex;
-            logger.info(`Send Job Progress: Currently at target ${global.vars.sendListIndex}` +
+            logger.info(`{{MASS SEND}}: Send Job Progress: Currently at target ${global.vars.sendListIndex}` +
                 ` out of ${sendList.contacts.length}`);
 
             let targetID = contact.phone + "@c.us";
@@ -100,19 +99,19 @@ async function massSend(client) {
             // Checks if profile is valid. If not, returns int 404
             let profile = await client.getNumberProfile(targetID)
                 .catch((err) => {
-                    logger.error('Error getting profile number.');
+                    logger.error('{{MASS SEND}}: Error getting profile number.');
                     logger.error(err);
                 });
 
             if (profile !== 404) {
-                logger.info(`Retrieved profile data:    - Account: ${profile.id.user}
-                                                            - Is business? ${profile.isBusiness}.
-                                                            - Can receive messages? ${profile.canReceiveMessage}.`);
+                logger.info(`{{MASS SEND}}: Retrieved profile data: - Account: ${profile.id.user}
+                                                                            - Is business? ${profile.isBusiness}.
+                                                                            - Can receive messages? ${profile.canReceiveMessage}.`);
 
                 targetID = profile.id._serialized;
 
-                logger.info(`Target: ${contact.name} - ${profile.id.user}`);
-                logger.info("Started sending to contact");
+                logger.info(`{{MASS SEND}}: Target: ${contact.name} - ${profile.id.user}`);
+                logger.info("{{MASS SEND}}: Started sending to contact");
 
                 let totalTypingTime = 0;
 
@@ -122,10 +121,10 @@ async function massSend(client) {
 
                     client.startTyping(targetID).then()
                         .catch((err) => {
-                            logger.error('Error trying to start typing.');
+                            logger.error('{{MASS SEND}}: Error trying to start typing.');
                             logger.error(err);
                         });
-                    logger.info("Started typing");
+                    logger.debug("{{MASS SEND}}: Started typing");
 
                     await new Promise(resolve => {
                         let typingTime = typeTime(
@@ -134,23 +133,23 @@ async function massSend(client) {
                             timeouts.typingVariance
                         );
                         totalTypingTime += typingTime;
-                        logger.info(`Typing timeout is ${typingTime}ms - sleeping`);
+                        logger.info(`{{MASS SEND}}: Typing timeout is ${typingTime}ms - sleeping`);
                         setTimeout(resolve, typingTime);
                     });
 
                     await client.sendText(targetID, message)
                         .catch((err) => {
-                            logger.error('Error sending message.');
+                            logger.error('{{MASS SEND}}: Error sending message.');
                             logger.error(err);
                         });
-                    logger.info(`Typed text: ${message}`);
+                    logger.info(`{{MASS SEND}}: Typed text: ${message}`);
 
                     client.stopTyping(targetID).then()
                         .catch((err) => {
-                            logger.error('Error trying to stop typing.');
+                            logger.error('{{MASS SEND}}: Error trying to stop typing.');
                             logger.error(err);
                         });
-                    logger.info("Stopped typing");
+                    logger.debug("{{MASS SEND}}: Stopped typing");
                 }
 
                 report.info({ message: "TypingTime", total: totalTypingTime, number: contact.phone, timestamp: Math.floor(new Date().getTime() / 1000) });
@@ -161,26 +160,26 @@ async function massSend(client) {
                     const randomBetweenFiles = percentualVariation(timeouts.betweenFiles, timeouts.typingVariance)
                     await new Promise(resolve => {
                         logger.info(
-                            `Attachment timeout is ${roundToPrecision(randomBetweenFiles, 2)} seconds - sleeping`);
+                            `{{MASS SEND}}: Attachment timeout is ${roundToPrecision(randomBetweenFiles, 2)} seconds - sleeping`);
                         setTimeout(resolve,
                             randomBetweenFiles * 1000);
                     });
-                    logger.info("Sending attachment:");
+                    logger.info("{{MASS SEND}}: Sending attachment:");
                     client.sendFile(targetID, attachment, path.basename(attachment))
                         .catch((err) => {
-                            logger.error('Error trying to send file.');
+                            logger.error('{{MASS SEND}}: Error trying to send file.');
                             logger.error(err);
                         });
-                    logger.info(`Sent ${path.basename(attachment)} as file`);
+                    logger.info(`{{MASS SEND}}: Sent ${path.basename(attachment)} as file`);
 
                     totalAttachmentTime += Math.floor(randomBetweenFiles * 1000);
                 }
 
                 report.info({ message: "AttachmentTime", total: totalAttachmentTime, number: contact.phone, timestamp: Math.floor(new Date().getTime() / 1000) });
 
-                logger.info("Finished sending to contact");
+                logger.info("{{MASS SEND}}: Finished sending to contact");
 
-                logger.info("Writing data to report log.");
+                logger.info("{{MASS SEND}}: Writing data to report log.");
                 /** ReportLog
                  * @param {string}  targetID    Phone number
                  * @param {boolean}    status      Sent status
@@ -189,18 +188,18 @@ async function massSend(client) {
 
                 if (deepSleepEveryCounter < timeouts.deepSleepEvery) {
                     ++deepSleepEveryCounter;
-                    logger.info(`Current deep sleep count is ${deepSleepEveryCounter},` +
+                    logger.info(`{{MASS SEND}}: Current deep sleep count is ${deepSleepEveryCounter},` +
                         ` up to a max of ${timeouts.deepSleepEvery}`);
 
                     if (sleepEveryCounter < timeouts.sleepEvery) {
                         ++sleepEveryCounter;
-                        logger.info(`Current sleep count is ${sleepEveryCounter},` +
+                        logger.info(`{{MASS SEND}}: Current sleep count is ${sleepEveryCounter},` +
                             ` up to a max of ${timeouts.sleepEvery}`);
 
                         const randomBetweenTargets = percentualVariation(timeouts.betweenTargets, timeouts.typingVariance);
                         await new Promise(resolve => {
                             logger.info(
-                                `Waiting ${roundToPrecision(randomBetweenTargets, 2)} seconds before going to next contact`)
+                                `{{MASS SEND}}: Waiting ${roundToPrecision(randomBetweenTargets, 2)} seconds before going to next contact`)
                             setTimeout(resolve, randomBetweenTargets * 1000);
                         });
                     } else if (sleepEveryCounter === timeouts.sleepEvery) {
@@ -208,7 +207,7 @@ async function massSend(client) {
 
                         const randomSleepDuration = percentualVariation(timeouts.sleepDuration, timeouts.typingVariance);
                         await new Promise(resolve => {
-                            logger.info(`Reached sleep target limit (${timeouts.sleepEvery}) - ` +
+                            logger.info(`{{MASS SEND}}: Reached sleep target limit (${timeouts.sleepEvery}) - ` +
                                 `Sleeping for ${roundToPrecision(randomSleepDuration, 2)} seconds`);
                             setTimeout(resolve, randomSleepDuration * 1000);
                         });
@@ -222,7 +221,7 @@ async function massSend(client) {
                         timeouts.typingVariance
                     );
                     await new Promise(resolve => {
-                        logger.info(`Reached deep sleep target limit (${timeouts.deepSleepEvery}) - ` +
+                        logger.info(`{{MASS SEND}}: Reached deep sleep target limit (${timeouts.deepSleepEvery}) - ` +
                             `Sleeping for ${roundToPrecision(randomDeepSleepDuration, 2)} minutes`);
                         setTimeout(resolve, randomDeepSleepDuration * 60 * 1000);
                     });
@@ -230,17 +229,19 @@ async function massSend(client) {
 
             } else {
                 // TODO: Push to DB when contact is invalid
-                logger.info(`${contact.name} ${contact.phone} - Invalid or nonexistant contact - skipping`);
+                logger.info(`{{MASS SEND}}: ${contact.name} ${contact.phone} - Invalid or nonexistant contact - skipping`);
                 report.info({ message: "Invalid or nonexistant contact - skipping", number: contact.phone, status: false, timestamp: Math.floor(new Date().getTime() / 1000) });
 
                 /** ReportLog */
                 finalReport.pushLog(contact.phone, false);
             }
 
-            logger.info(`Send Job Progress: Sent to target ${global.vars.sendListIndex} out of ${sendList.contacts.length}`);
+            logger.info(`{{MASS SEND}}: Send Job Progress: Completed target ${global.vars.sendListIndex} out of ${sendList.contacts.length}`);
             const jobPercentComplete = roundToPrecision(global.vars.sendListIndex / sendList.contacts.length * 100, 2);
-            logger.info(`Send Job Progress: Job is ${jobPercentComplete}% complete.`);
+            logger.info(`{{MASS SEND}}: Send Job Progress: Job is ${jobPercentComplete}% complete.`);
         }
+
+    logger.info("{{MASS SEND}}: Mass send job completed");
 }
 
 module.exports = massSend;

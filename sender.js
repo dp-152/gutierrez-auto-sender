@@ -10,7 +10,7 @@ const {
     global
 } = require('./sys/global');
 
-logger.info('Initializing server...');
+logger.info('{{INIT}}: Initializing server...');
 logger.info(getDateString(new Date(), `
 #############################################################
 #
@@ -20,17 +20,17 @@ logger.info(getDateString(new Date(), `
 #
 #
 #############################################################`));
-logger.info("Loading parameters...");
+logger.info("{{INIT}}: Loading parameters...");
 
-logger.info("Parameters loaded.");
-logger.info(`Instance name is ${settings.instance.name}`);
-logger.info(`Send list is ${sendListFile}`);
-logger.info(`Settings file is ${settingsFile}`);
-logger.info("Loaded settings: " + JSON.stringify(settings));
-logger.info(`Campaign dir is ${campaignDir}`);
-logger.info(`Campaign name is ${campaignName}`);
+logger.info("{{INIT}}: Parameters loaded.");
+logger.info(`{{INIT}}: Instance name is ${settings.instance.name}`);
+logger.info(`{{INIT}}: Send list is ${sendListFile}`);
+logger.info(`{{INIT}}: Settings file is ${settingsFile}`);
+logger.info(`{{INIT}}: Loaded settings: ${JSON.stringify(settings, null, 4)}`);
+logger.info(`{{INIT}}: Campaign dir is ${campaignDir}`);
+logger.info(`{{INIT}}: Campaign name is ${campaignName}`);
 
 
 // First init of Venom instance - instance name inherited from ini file [instance] name = {string}
-
+logger.info("{{INIT}}: Creating Venom instance...");
 createVenom(global.vars.instanceName);
