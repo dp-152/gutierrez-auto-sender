@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
-const {logger} = require('./logger');
+const { logger } = require('./logger');
+const { getDateString } = require('./helper');
 
 class ReportLog {
 
@@ -28,20 +29,24 @@ class ReportLog {
     pushLog(num, status) {
 
         // combine data into a csv format
-        var csvdata = [num, status].join(",");
-        var newline = "\r\n";
+        const csvData = [
+            getDateString(new Date(), '{{year}}/{{month}}/{{day}}-{{hour}}:{{minutes}}:{{seconds}}'),
+            num,
+            status
+        ].join(",");
+        const newLine = "\r\n";
 
         if (fs.existsSync(this.filepath)) {
             // file exists
             // append the data to the file
             try {
-                fs.appendFileSync(this.filepath, (csvdata + newline));
+                fs.appendFileSync(this.filepath, (csvData + newLine));
             } catch (err) {
                 logger.error(__filename + " - " + err);
             }
         } else {
             // file doesn't exists
-            var csvcolumns = ("num,status" + newline);
+            const csvColumns = ("date,num,status" + newLine);
 
             // if the log dir doesn't exist, create it.
             if (!fs.existsSync(path.dirname(this.filepath))) {
@@ -50,7 +55,7 @@ class ReportLog {
 
             // place header files along with the first data
             try {
-                fs.writeFileSync(this.filepath, (csvcolumns + csvdata + newline));
+                fs.writeFileSync(this.filepath, (csvColumns + csvData + newLine));
             } catch (err) {
                 logger.error(__filename + " - " + err);
             }
