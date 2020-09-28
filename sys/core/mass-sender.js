@@ -212,20 +212,20 @@ module.exports = massSend;
 async function evaluateTimeouts() {
     if (deepSleepEveryCounter < timeouts.deepSleepEvery) {
 
-        logger.info(`{{MASS SEND}}: Current deep sleep count is ${deepSleepEveryCounter},` +
+        logger.info(`{{SLEEP}}: Current deep sleep count is ${deepSleepEveryCounter},` +
             ` up to a max of ${timeouts.deepSleepEvery}`);
         ++deepSleepEveryCounter;
 
         if (sleepEveryCounter < timeouts.sleepEvery) {
 
-            logger.info(`{{MASS SEND}}: Current short sleep count is ${sleepEveryCounter},` +
+            logger.info(`{{SLEEP}}: Current short sleep count is ${sleepEveryCounter},` +
                 ` up to a max of ${timeouts.sleepEvery}`);
             ++sleepEveryCounter;
 
             const randomBetweenTargets = percentualVariation(timeouts.betweenTargets, timeouts.typingVariance);
             await new Promise(resolve => {
                 logger.info(
-                    `{{MASS SEND}}: Waiting ${roundToPrecision(randomBetweenTargets, 2)}` +
+                    `{{SLEEP}}: Waiting ${roundToPrecision(randomBetweenTargets, 2)}` +
                     ` seconds before going to next contact`)
                 setTimeout(resolve, randomBetweenTargets * 1000);
             });
@@ -234,7 +234,7 @@ async function evaluateTimeouts() {
 
             const randomSleepDuration = percentualVariation(timeouts.sleepDuration, timeouts.typingVariance);
             await new Promise(resolve => {
-                logger.info(`{{MASS SEND}}: Reached sleep target limit (${timeouts.sleepEvery}) - ` +
+                logger.info(`{{SLEEP}}: Reached sleep target limit (${timeouts.sleepEvery}) - ` +
                     `Sleeping for ${roundToPrecision(randomSleepDuration, 2)} seconds`);
                 setTimeout(resolve, randomSleepDuration * 1000);
             });
@@ -248,7 +248,7 @@ async function evaluateTimeouts() {
             timeouts.typingVariance
         );
         await new Promise(resolve => {
-            logger.info(`{{MASS SEND}}: Reached deep sleep target limit (${timeouts.deepSleepEvery}) - ` +
+            logger.info(`{{SLEEP}}: Reached deep sleep target limit (${timeouts.deepSleepEvery}) - ` +
                 `Sleeping for ${roundToPrecision(randomDeepSleepDuration, 2)} minutes`);
             setTimeout(resolve, randomDeepSleepDuration * 60 * 1000);
         });
