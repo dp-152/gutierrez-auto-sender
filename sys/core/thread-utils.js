@@ -53,12 +53,13 @@ function createVenom(instanceName) {
 
 async function destroyVenom(client) {
     global.vars.flagSelfDestruct = false;
-    logger.warn("{{SELF-DESTRUCT}}: Destroy sequence has been initiated.");
+    logger.warn("{{SELF-DESTRUCT}}: Self destruct sequence has been initiated.");
     logger.warn(`{{SELF-DESTRUCT}}: Current instance is ${global.vars.instanceName}`);
     logger.warn(`{{SELF-DESTRUCT}}: Current campaign is ${campaignName}`);
     logger.warn(`{{SELF-DESTRUCT}}: Current send list is ${sendListFile}`);
     logger.warn(`{{SELF-DESTRUCT}}: Current sendList index is ${global.vars.sendListIndex}`);
-    logger.warn(`{{SELF-DESTRUCT}}: Will now close instance ${global.vars.instanceName} - session ID: ${client.page._client._sessionId}`);
+    logger.warn(`{{SELF-DESTRUCT}}: Will now close instance ${global.vars.instanceName}` +
+        ` with session ID: ${client.page._client._sessionId}`);
     await client.close()
         .then(() => {
             logger.info(`{{SELF-DESTRUCT}}: Closed thread ${global.vars.instanceName} successfully`);
