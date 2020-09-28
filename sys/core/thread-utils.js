@@ -82,6 +82,7 @@ async function restartVenom() {
 }
 
 async function checkSelfDestructState(client) {
+    // TODO: Maybe use a callback instead of an infinite loop with timeout?
     for (;;) {
         if (global.vars.flagSelfDestruct) {
             await selfDestruct(client);
