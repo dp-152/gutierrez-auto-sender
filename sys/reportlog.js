@@ -19,7 +19,7 @@ class ReportLog {
      * Function to write a CSV log file into the directory given by filepath
      * --------------------------------------
      * @param {string} num  phone number
-     * @param {bool} status sent status
+     * @param {boolean} status sent status
      * --------------------------------------
      * @result {void} if was successful
      * @result {error} if it got any error (it will stop the execution)

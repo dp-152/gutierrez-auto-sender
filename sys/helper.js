@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const {logger} = require('./logger');
 
 // Function for setting wait time to simulate human typing
 // Returns wait time in milliseconds
@@ -23,11 +22,9 @@ function loadCampaignFiles(dir){
     let files = fs.readdirSync(dir,{withFileTypes: true}).filter(item => !item.isDirectory()).map(item => item.name);
     
     files.forEach(file => {
-        logger.info(`Acquired file: ${file}`);
-
         file = path.resolve(`${dir}\\${file}`);
         let ext = path.extname(file).substring(1);
-        ext == "txt" ? text.push(file) : attachments.push(file);
+        ext === "txt" ? text.push(file) : attachments.push(file);
     });
 
     return {
@@ -37,7 +34,7 @@ function loadCampaignFiles(dir){
 }
 
 // Reads text from acquired text files array
-function readTextfromFiles(textFiles){
+function readTextFromFiles(textFiles){
 
     let result = '';
     textFiles.forEach(file => {
@@ -110,7 +107,7 @@ function roundToPrecision(value, precision) {
 module.exports = {
     typeTime,
     loadCampaignFiles,
-    readTextfromFiles,
+    readTextFromFiles,
     replaceKeys,
     getDateString,
     percentualVariation,
