@@ -18,6 +18,13 @@ const {
     global
 } = require('../global');
 
+// Initializing timeouts object
+let timeouts = {};
+
+// Setting counters for sleep and deep sleep routines
+let sleepEveryCounter = 0;
+let deepSleepEveryCounter = 0;
+
 // Mass sender thread
 async function massSend(client) {
 
@@ -27,7 +34,7 @@ async function massSend(client) {
     logger.info(`{{MASS SEND}}: Campaign name is: ${path.dirname(campaignDir)}`);
 
     // Load timeouts
-    const timeouts = {
+    timeouts = {
         typingWPM: parseInt(settings.timeouts.typing),
         typingVariance: parseInt(settings.timeouts.typing_variance),
         betweenFiles: parseInt(settings.timeouts.between_files),
@@ -37,10 +44,6 @@ async function massSend(client) {
         deepSleepEvery: parseInt(settings.timeouts.deep_sleep_every),
         deepSleepDuration: parseInt(settings.timeouts.deep_sleep_duration)
     }
-
-    // Setting counters for sleep and deep sleep routines
-    let sleepEveryCounter = 0;
-    let deepSleepEveryCounter = 0;
 
     // Enumerates send dir text and attachment files from --dir argument
     // Attachment files will be sent in alphabetical order
@@ -105,8 +108,8 @@ async function massSend(client) {
 
             if (profile !== 404) {
                 logger.info(`{{MASS SEND}}: Retrieved profile data: - Account: ${profile.id.user}
-                                                                            - Is business? ${profile.isBusiness}.
-                                                                            - Can receive messages? ${profile.canReceiveMessage}.`);
+                                                                        - Is business? ${profile.isBusiness}.
+                                                                        - Can receive messages? ${profile.canReceiveMessage}.`);
 
                 targetID = profile.id._serialized;
 
@@ -186,55 +189,15 @@ async function massSend(client) {
                  */
                 finalReport.pushLog(contact.phone, true);
 
-                if (deepSleepEveryCounter < timeouts.deepSleepEvery) {
-                    ++deepSleepEveryCounter;
-                    logger.info(`{{MASS SEND}}: Current deep sleep count is ${deepSleepEveryCounter},` +
-                        ` up to a max of ${timeouts.deepSleepEvery}`);
-
-                    if (sleepEveryCounter < timeouts.sleepEvery) {
-                        ++sleepEveryCounter;
-                        logger.info(`{{MASS SEND}}: Current sleep count is ${sleepEveryCounter},` +
-                            ` up to a max of ${timeouts.sleepEvery}`);
-
-                        const randomBetweenTargets = percentualVariation(timeouts.betweenTargets, timeouts.typingVariance);
-                        await new Promise(resolve => {
-                            logger.info(
-                                `{{MASS SEND}}: Waiting ${roundToPrecision(randomBetweenTargets, 2)} seconds before going to next contact`)
-                            setTimeout(resolve, randomBetweenTargets * 1000);
-                        });
-                    } else if (sleepEveryCounter === timeouts.sleepEvery) {
-                        sleepEveryCounter = 0;
-
-                        const randomSleepDuration = percentualVariation(timeouts.sleepDuration, timeouts.typingVariance);
-                        await new Promise(resolve => {
-                            logger.info(`{{MASS SEND}}: Reached sleep target limit (${timeouts.sleepEvery}) - ` +
-                                `Sleeping for ${roundToPrecision(randomSleepDuration, 2)} seconds`);
-                            setTimeout(resolve, randomSleepDuration * 1000);
-                        });
-                    }
-                } else if (deepSleepEveryCounter === timeouts.deepSleepEvery) {
-                    deepSleepEveryCounter = 0;
-                    sleepEveryCounter = 0;
-
-                    const randomDeepSleepDuration = percentualVariation(
-                        timeouts.deepSleepDuration,
-                        timeouts.typingVariance
-                    );
-                    await new Promise(resolve => {
-                        logger.info(`{{MASS SEND}}: Reached deep sleep target limit (${timeouts.deepSleepEvery}) - ` +
-                            `Sleeping for ${roundToPrecision(randomDeepSleepDuration, 2)} minutes`);
-                        setTimeout(resolve, randomDeepSleepDuration * 60 * 1000);
-                    });
-                }
-
             } else {
-                // TODO: Push to DB when contact is invalid
-                logger.info(`{{MASS SEND}}: ${contact.name} ${contact.phone} - Invalid or nonexistant contact - skipping`);
-                report.info({ message: "Invalid or nonexistant contact - skipping", number: contact.phone, status: false, timestamp: Math.floor(new Date().getTime() / 1000) });
+                logger.info(`{{MASS SEND}}: ${contact.name} ${contact.phone} - Invalid or nonexistent contact - skipping`);
+                report.info({ message: "Invalid or nonexistent contact - skipping", number: contact.phone, status: false, timestamp: Math.floor(new Date().getTime() / 1000) });
 
                 /** ReportLog */
                 finalReport.pushLog(contact.phone, false);
             }
+
+            await evaluateTimeouts();
 
             logger.info(`{{MASS SEND}}: Send Job Progress: Completed target ${global.vars.sendListIndex} out of ${sendList.contacts.length}`);
             const jobPercentComplete = roundToPrecision(global.vars.sendListIndex / sendList.contacts.length * 100, 2);
@@ -245,3 +208,49 @@ async function massSend(client) {
 }
 
 module.exports = massSend;
+
+async function evaluateTimeouts() {
+    if (deepSleepEveryCounter < timeouts.deepSleepEvery) {
+
+        logger.info(`{{MASS SEND}}: Current deep sleep count is ${deepSleepEveryCounter},` +
+            ` up to a max of ${timeouts.deepSleepEvery}`);
+        ++deepSleepEveryCounter;
+
+        if (sleepEveryCounter < timeouts.sleepEvery) {
+
+            logger.info(`{{MASS SEND}}: Current short sleep count is ${sleepEveryCounter},` +
+                ` up to a max of ${timeouts.sleepEvery}`);
+            ++sleepEveryCounter;
+
+            const randomBetweenTargets = percentualVariation(timeouts.betweenTargets, timeouts.typingVariance);
+            await new Promise(resolve => {
+                logger.info(
+                    `{{MASS SEND}}: Waiting ${roundToPrecision(randomBetweenTargets, 2)}` +
+                    ` seconds before going to next contact`)
+                setTimeout(resolve, randomBetweenTargets * 1000);
+            });
+        } else if (sleepEveryCounter >= timeouts.sleepEvery) {
+            sleepEveryCounter = 0;
+
+            const randomSleepDuration = percentualVariation(timeouts.sleepDuration, timeouts.typingVariance);
+            await new Promise(resolve => {
+                logger.info(`{{MASS SEND}}: Reached sleep target limit (${timeouts.sleepEvery}) - ` +
+                    `Sleeping for ${roundToPrecision(randomSleepDuration, 2)} seconds`);
+                setTimeout(resolve, randomSleepDuration * 1000);
+            });
+        }
+    } else if (deepSleepEveryCounter >= timeouts.deepSleepEvery) {
+        deepSleepEveryCounter = 0;
+        sleepEveryCounter = 0;
+
+        const randomDeepSleepDuration = percentualVariation(
+            timeouts.deepSleepDuration,
+            timeouts.typingVariance
+        );
+        await new Promise(resolve => {
+            logger.info(`{{MASS SEND}}: Reached deep sleep target limit (${timeouts.deepSleepEvery}) - ` +
+                `Sleeping for ${roundToPrecision(randomDeepSleepDuration, 2)} minutes`);
+            setTimeout(resolve, randomDeepSleepDuration * 60 * 1000);
+        });
+    }
+}
