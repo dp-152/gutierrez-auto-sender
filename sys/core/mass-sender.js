@@ -18,9 +18,6 @@ const {
     global
 } = require('../global');
 
-// Initializing timeouts object
-let timeouts = {};
-
 // Setting counters for sleep and deep sleep routines
 let sleepEveryCounter = 0;
 let deepSleepEveryCounter = 0;
@@ -32,18 +29,6 @@ async function massSend(client) {
     const sendList = JSON.parse(fs.readFileSync(sendListFile, 'utf-8'));
 
     logger.info(`{{MASS SEND}}: Campaign name is: ${path.dirname(campaignDir)}`);
-
-    // Load timeouts
-    timeouts = {
-        typingWPM: parseInt(settings.timeouts.typing),
-        typingVariance: parseInt(settings.timeouts.typing_variance),
-        betweenFiles: parseInt(settings.timeouts.between_files),
-        betweenTargets: parseInt(settings.timeouts.between_targets),
-        sleepEvery: parseInt(settings.timeouts.sleep_every),
-        sleepDuration: parseInt(settings.timeouts.sleep_duration),
-        deepSleepEvery: parseInt(settings.timeouts.deep_sleep_every),
-        deepSleepDuration: parseInt(settings.timeouts.deep_sleep_duration)
-    }
 
     // Enumerates send dir text and attachment files from --dir argument
     // Attachment files will be sent in alphabetical order
@@ -74,7 +59,11 @@ async function massSend(client) {
     logger.info("{{MASS SEND}}: Starting mass send job...");
 
     logger.info(`{{MASS SEND}}: Send list has a total of ${sendList.contacts.length} targets`)
-    report.info({ message: "SendListTotalTargets", total: sendList.contacts.length, timestamp: Math.floor(new Date().getTime() / 1000) });
+    report.info({
+        message: "SendListTotalTargets",
+        total: sendList.contacts.length,
+        timestamp: Math.floor(new Date().getTime() / 1000)
+    });
 
     const startingIndex = global.vars.sendListIndex
 
@@ -132,8 +121,8 @@ async function massSend(client) {
                     await new Promise(resolve => {
                         let typingTime = typeTime(
                             message.length,
-                            timeouts.typingWPM,
-                            timeouts.typingVariance
+                            settings.timeouts.typing,
+                            settings.timeouts.typing_variance
                         );
                         totalTypingTime += typingTime;
                         logger.info(`{{MASS SEND}}: Typing timeout is ${typingTime}ms - sleeping`);
@@ -155,15 +144,24 @@ async function massSend(client) {
                     logger.debug("{{MASS SEND}}: Stopped typing");
                 }
 
-                report.info({ message: "TypingTime", total: totalTypingTime, number: contact.phone, timestamp: Math.floor(new Date().getTime() / 1000) });
+                report.info({
+                        message: "TypingTime",
+                        total: totalTypingTime,
+                        number: contact.phone,
+                        timestamp: Math.floor(new Date().getTime() / 1000)
+                    });
 
                 let totalAttachmentTime = 0;
 
                 for (let attachment of campaignContent.files) {
-                    const randomBetweenFiles = percentualVariation(timeouts.betweenFiles, timeouts.typingVariance)
+                    const randomBetweenFiles = percentualVariation(
+                        settings.timeouts.between_files,
+                        settings.timeouts.typing_variance
+                    );
                     await new Promise(resolve => {
                         logger.info(
-                            `{{MASS SEND}}: Attachment timeout is ${roundToPrecision(randomBetweenFiles, 2)} seconds - sleeping`);
+                            `{{MASS SEND}}: Attachment timeout is` +
+                            ` ${roundToPrecision(randomBetweenFiles, 2)} seconds - sleeping`);
                         setTimeout(resolve,
                             randomBetweenFiles * 1000);
                     });
@@ -178,7 +176,12 @@ async function massSend(client) {
                     totalAttachmentTime += Math.floor(randomBetweenFiles * 1000);
                 }
 
-                report.info({ message: "AttachmentTime", total: totalAttachmentTime, number: contact.phone, timestamp: Math.floor(new Date().getTime() / 1000) });
+                report.info({
+                    message: "AttachmentTime",
+                    total: totalAttachmentTime,
+                    number: contact.phone,
+                    timestamp: Math.floor(new Date().getTime() / 1000)
+                });
 
                 logger.info("{{MASS SEND}}: Finished sending to contact");
 
@@ -210,45 +213,51 @@ async function massSend(client) {
 module.exports = massSend;
 
 async function evaluateTimeouts() {
-    if (deepSleepEveryCounter < timeouts.deepSleepEvery) {
+    if (deepSleepEveryCounter < settings.timeouts.deep_sleep_every) {
 
         logger.info(`{{SLEEP}}: Current deep sleep count is ${deepSleepEveryCounter},` +
-            ` up to a max of ${timeouts.deepSleepEvery}`);
+            ` up to a max of ${settings.timeouts.deep_sleep_every}`);
         ++deepSleepEveryCounter;
 
-        if (sleepEveryCounter < timeouts.sleepEvery) {
+        if (sleepEveryCounter < settings.timeouts.sleep_every) {
 
             logger.info(`{{SLEEP}}: Current short sleep count is ${sleepEveryCounter},` +
-                ` up to a max of ${timeouts.sleepEvery}`);
+                ` up to a max of ${settings.timeouts.sleep_every}`);
             ++sleepEveryCounter;
 
-            const randomBetweenTargets = percentualVariation(timeouts.betweenTargets, timeouts.typingVariance);
+            const randomBetweenTargets = percentualVariation(
+                settings.timeouts.between_targets,
+                settings.timeouts.typing_variance
+            );
             await new Promise(resolve => {
                 logger.info(
                     `{{SLEEP}}: Waiting ${roundToPrecision(randomBetweenTargets, 2)}` +
                     ` seconds before going to next contact`)
                 setTimeout(resolve, randomBetweenTargets * 1000);
             });
-        } else if (sleepEveryCounter >= timeouts.sleepEvery) {
+        } else if (sleepEveryCounter >= settings.timeouts.sleep_every) {
             sleepEveryCounter = 0;
 
-            const randomSleepDuration = percentualVariation(timeouts.sleepDuration, timeouts.typingVariance);
+            const randomSleepDuration = percentualVariation(
+                settings.timeouts.sleep_duration,
+                settings.timeouts.typing_variance
+            );
             await new Promise(resolve => {
-                logger.info(`{{SLEEP}}: Reached sleep target limit (${timeouts.sleepEvery}) - ` +
+                logger.info(`{{SLEEP}}: Reached sleep target limit (${settings.timeouts.sleep_every}) - ` +
                     `Sleeping for ${roundToPrecision(randomSleepDuration, 2)} seconds`);
                 setTimeout(resolve, randomSleepDuration * 1000);
             });
         }
-    } else if (deepSleepEveryCounter >= timeouts.deepSleepEvery) {
+    } else if (deepSleepEveryCounter >= settings.timeouts.deep_sleep_every) {
         deepSleepEveryCounter = 0;
         sleepEveryCounter = 0;
 
         const randomDeepSleepDuration = percentualVariation(
-            timeouts.deepSleepDuration,
-            timeouts.typingVariance
+            settings.timeouts.deep_sleep_duration,
+            settings.timeouts.typing_variance
         );
         await new Promise(resolve => {
-            logger.info(`{{SLEEP}}: Reached deep sleep target limit (${timeouts.deepSleepEvery}) - ` +
+            logger.info(`{{SLEEP}}: Reached deep sleep target limit (${settings.timeouts.deep_sleep_every}) - ` +
                 `Sleeping for ${roundToPrecision(randomDeepSleepDuration, 2)} minutes`);
             setTimeout(resolve, randomDeepSleepDuration * 60 * 1000);
         });
