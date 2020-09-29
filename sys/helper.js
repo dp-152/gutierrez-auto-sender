@@ -103,8 +103,8 @@ function percentualVariation(baseValue, variance, float = true) {
     return result;
 }
 
-function randomInRange(min, max) {
-    return Math.random() * (max - min + 1) + min
+function randomInRange(min, max, precision = 0) {
+    return roundToPrecision(Math.random() * (max - min + 1) + min, precision);
 }
 
 // Rounds a float number to n precision digits
