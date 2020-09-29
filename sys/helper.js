@@ -14,7 +14,7 @@ function typeTime(textLength, CPM, variance= 10) {
     return Math.trunc(totalTime);
 }
 
-function loadCampaignFiles(dir){
+function loadCampaignFiles(dir) {
     // Iterator to folder.
     let text = [];
     let attachments = [];
@@ -34,7 +34,7 @@ function loadCampaignFiles(dir){
 }
 
 // Reads text from acquired text files array
-function readTextFromFiles(textFiles){
+function readTextFromFiles(textFiles) {
 
     let result = '';
     textFiles.forEach(file => {
@@ -48,7 +48,7 @@ function readTextFromFiles(textFiles){
 }
 
 // Replaces known keys within the text with their appropriate equivalents
-function replaceKeys(str, object, delimiter = ["{{", "}}"]){
+function replaceKeys(str, object, delimiter = ["{{", "}}"]) {
 
     let regexp = new RegExp(`${delimiter[0]}(.*?)${delimiter[1]}`, 'g');
     let matches = [...str.matchAll(regexp)];
@@ -81,7 +81,7 @@ function getDateString(date, formatKeys) {
 
 // Generates a random number between a percentual variation threshold (above and below) the base value
 // Takes an int as base value and an int corresponding to the percentual variation to be applied
-function percentualVariation(baseValue, variance, float = true){
+function percentualVariation(baseValue, variance, float = true) {
 
     let min = baseValue - ((baseValue / 100) * variance);
     let max = baseValue + ((baseValue / 100) * variance);
