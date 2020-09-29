@@ -1,6 +1,7 @@
 const { argv } = require('yargs');
 const {ini_init} = require("./ini");
 const path = require('path');
+const { parseIntsInObj } = require('./helper');
 
 // Load required files from CLI arguments
 const sendListFile = argv.list;
@@ -8,6 +9,8 @@ const settingsFile = argv.config;
 const settings = ini_init(settingsFile);
 const campaignDir = argv.dir;
 const campaignName = path.basename(campaignDir);
+
+settings.timeouts = parseIntsInObj(settings.timeouts);
 
 let global = {
     vars: {

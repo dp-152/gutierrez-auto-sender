@@ -99,9 +99,19 @@ function percentualVariation(baseValue, variance, float = true){
     return result;
 }
 
+// Rounds a float number to n precision digits
+// Use negative precision values to round to tens, hundreds, thousands, et cetera.
 function roundToPrecision(value, precision) {
-    var multiplier = Math.pow(10, precision || 0);
+    const multiplier = Math.pow(10, precision || 0);
     return Math.round(value * multiplier) / multiplier;
+}
+
+// Parses object string values into ints
+// To be used to retrieve numerical values from object generated from ini file
+function parseIntsInObj(obj) {
+      for (const [key, value] of Object.entries(obj))
+          obj[key] = parseInt(value);
+      return obj;
 }
 
 module.exports = {
@@ -111,5 +121,6 @@ module.exports = {
     replaceKeys,
     getDateString,
     percentualVariation,
-    roundToPrecision
+    roundToPrecision,
+    parseIntsInObj
 }
