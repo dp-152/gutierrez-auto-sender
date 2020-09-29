@@ -91,12 +91,16 @@ function percentualVariation(baseValue, variance, float = true){
         max = Math.floor(max);
     }
 
-    let result = Math.random() * (max - min + 1) + min
+    let result = randomInRange(min, max);
 
     if (!float)
         result = Math.floor(result);
 
     return result;
+}
+
+function randomInRange(min, max) {
+    return Math.random() * (max - min + 1) + min
 }
 
 // Rounds a float number to n precision digits
