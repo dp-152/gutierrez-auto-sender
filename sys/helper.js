@@ -154,6 +154,7 @@ function makeIpsum(length) {
                 result += word + ' ';
         }
     }
+    return result;
 }
 
 module.exports = {
@@ -165,5 +166,6 @@ module.exports = {
     percentualVariation,
     roundToPrecision,
     parseIntsInObj,
-    randomInRange
+    randomInRange,
+    makeIpsum
 }

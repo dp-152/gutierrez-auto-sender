@@ -6,8 +6,7 @@ const {
 } = require('../global');
 const {
     randomInRange,
-    readTextFiles,
-    loadFilesInDir,
+    makeIpsum,
     typeTime,
     percentualVariation
 } = require("../helper");
@@ -16,14 +15,11 @@ const {
 async function familiarStartConversation(client) {
 
     // Loading send list from resources/familiar_list.json
+    // TODO: Load this file from ini parameters
     const sendList = JSON.parse(fs.readFileSync(
         path.resolve(__dirname, '..', 'resources', 'familiar_list.json'),
         'utf-8'
     ));
-
-    // TODO: Get these locations through ini parameters
-    const sendLines = readTextFiles(path.resolve(__dirname, '..', 'resources', 'familiar_lines.txt'));
-    const sendAttachments = loadFilesInDir(path.resolve(__dirname, '..', 'resources', 'attachments')).files;
 
     // Determining the amount of targets to start a conversation with
     const targetAmount = randomInRange(2, 6);
@@ -44,7 +40,7 @@ async function familiarStartConversation(client) {
         const messageAmount = randomInRange(1, 8);
 
         for (let j = 0; j < messageAmount; ++j) {
-            const message = sendLines[randomInRange(0, sendLines.length - 1)]
+            const message = makeIpsum(randomInRange(5, 35));
 
             client.startTyping(target.id._serialized).then()
                 .catch((err) => {
@@ -58,19 +54,6 @@ async function familiarStartConversation(client) {
 
             await client.sendText(target.id._serialized, message).catch(err => logger.error(err));
             client.stopTyping(target.id._serialized).then().catch(err => logger.error(err));
-        }
-
-        for (let att of sendAttachments) {
-            const randomWaitBetweenFiles = percentualVariation(
-                settings.timeouts.between_files,
-                settings.timeouts.typing_variance
-            );
-
-            await new Promise(r => {
-               setTimeout(r, randomWaitBetweenFiles * 1000);
-            });
-
-            client.sendFile(target.id._serialized, att, path.basename(att)).then().catch(err => logger.error(err));
         }
 
         await new Promise(r => setTimeout(r, percentualVariation(15, 15)));
