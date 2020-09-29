@@ -14,7 +14,7 @@ function typeTime(textLength, CPM, variance= 10) {
     return Math.trunc(totalTime);
 }
 
-function loadCampaignFiles(dir) {
+function loadFilesInDir(dir) {
     // Iterator to folder.
     let text = [];
     let attachments = [];
@@ -124,7 +124,7 @@ function parseIntsInObj(obj) {
 
 module.exports = {
     typeTime,
-    loadCampaignFiles,
+    loadFilesInDir,
     readTextFiles,
     replaceKeys,
     getDateString,

@@ -4,7 +4,7 @@ const {ReportLog} = require("../reportlog");
 const { logger, report } = require('../logger');
 const {
     getDateString,
-    loadCampaignFiles,
+    loadFilesInDir,
     percentualVariation,
     readTextFiles,
     roundToPrecision,
@@ -33,7 +33,7 @@ async function massSend(client) {
     // Enumerates send dir text and attachment files from --dir argument
     // Attachment files will be sent in alphabetical order
     logger.info("{{MASS SEND}}: Probing campaign dir for text files and attachments...")
-    const campaignContent = loadCampaignFiles(campaignDir);
+    const campaignContent = loadFilesInDir(campaignDir);
     logger.info(`{{MASS SEND}}: Loaded campaign files: ${JSON.stringify(campaignContent, null, 4)}`)
 
     // TODO: Add option to send links with preview
