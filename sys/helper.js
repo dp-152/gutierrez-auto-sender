@@ -34,13 +34,17 @@ function loadCampaignFiles(dir) {
 }
 
 // Reads text from acquired text files array
-function readTextFromFiles(textFiles) {
+function readTextFiles(textFiles) {
 
     let result = '';
-    textFiles.forEach(file => {
-        result += fs.readFileSync(file, 'utf-8');
-        result += '\n'
-    });
+    if (Array.isArray(textFiles)) {
+        textFiles.forEach(file => {
+            result += fs.readFileSync(file, 'utf-8');
+            result += '\n'
+        });
+    }
+    else
+        result = fs.readFileSync(textFiles, 'utf-8');
 
     return result.split(/[\r\n]/g).filter((el) => {
         return el !== "";
@@ -121,7 +125,7 @@ function parseIntsInObj(obj) {
 module.exports = {
     typeTime,
     loadCampaignFiles,
-    readTextFromFiles,
+    readTextFiles,
     replaceKeys,
     getDateString,
     percentualVariation,
