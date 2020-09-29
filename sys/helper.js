@@ -122,6 +122,40 @@ function parseIntsInObj(obj) {
       return obj;
 }
 
+// Generates a lorem ipsum string of length n (words)
+function makeIpsum(length) {
+
+    // Loads word list from misc/lipsum.txt
+    const lipsum = fs.readFileSync(path.resolve(__dirname, 'misc', 'lipsum.txt'), "utf-8")
+        .split(/[\r\n]/g)
+        // Filters out any potential empty strings
+        .filter(line => {
+            return line !== '';
+        });
+    let result = "";
+    for (let i = 0; i < length; ++i) {
+        // Pulls a random number between zero and the length of the lipsum array
+        const word = lipsum[randomInRange(0, lipsum.length - 1)];
+        switch (i) {
+            // Capitalize if first word
+            case 0:
+                result += word.charAt(0).toUpperCase() + word.slice(1);
+                break;
+            // Add a coma at random points (between zero and the max length of the string)
+            case randomInRange(0, length):
+                result += word + ', ';
+                break;
+            // Adds a period to the last word of the string
+            case length:
+                result += word + '.';
+                break;
+            // Adds a simple space to any other word
+            default:
+                result += word + ' ';
+        }
+    }
+}
+
 module.exports = {
     typeTime,
     loadFilesInDir,
