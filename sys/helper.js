@@ -126,5 +126,6 @@ module.exports = {
     getDateString,
     percentualVariation,
     roundToPrecision,
-    parseIntsInObj
+    parseIntsInObj,
+    randomInRange
 }
