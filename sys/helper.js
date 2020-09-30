@@ -133,6 +133,7 @@ function makeIpsum(length) {
             return line !== '';
         });
     let result = "";
+    let commaChance = 2;
     for (let i = 0; i < length; ++i) {
         // Pulls a random number between zero and the length of the lipsum array
         const word = lipsum[randomInRange(0, lipsum.length - 1)];
@@ -146,11 +147,13 @@ function makeIpsum(length) {
                 result += word + '.';
                 break;
             // Add a coma at random points (between zero and the max length of the string)
-            case randomInRange(0, length - 1 ):
+            case randomInRange(i - commaChance, i + commaChance):
+                commaChance += 5;
                 result += word + ', ';
                 break;
             // Adds a simple space to any other word
             default:
+                --commaChance;
                 result += word + ' ';
         }
     }
