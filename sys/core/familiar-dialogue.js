@@ -33,14 +33,21 @@ async function familiarStartConversation(client) {
         while (excludeTarget.includes(targetIndex)){
             targetIndex = randomInRange(0, sendList.contacts.length - 1);
         }
+        // Returns a valid contact object
         const target = await client.getNumberProfile(sendList.contacts[targetIndex].phone);
         excludeTarget.push(targetIndex);
 
         // Determining the amount of messages to send at once to current target
         const messageAmount = randomInRange(1, 8);
 
+        // Loops for the amount of messages determined on the previous step
         for (let j = 0; j < messageAmount; ++j) {
-            const message = makeIpsum(randomInRange(5, 35));
+            // Generates a random lorem ipsum string within the range of 5 to 35 words
+            let message = makeIpsum(randomInRange(5, 35));
+
+            // If last message, add the reply tag
+            if (j === messageAmount - 1)
+                message += "{{REPLY}}";
 
             client.startTyping(target.id._serialized).then()
                 .catch((err) => {
