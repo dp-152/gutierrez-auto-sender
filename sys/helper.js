@@ -109,9 +109,9 @@ function randomInRange(min, max, precision = 0) {
 
 // Rounds a float number to n precision digits
 // Use negative precision values to round to tens, hundreds, thousands, et cetera.
-function roundToPrecision(value, precision) {
+function roundToPrecision(value, precision = 0) {
     const multiplier = Math.pow(10, precision || 0);
-    return Math.round(value * multiplier) / multiplier;
+    return Math.floor(value * multiplier) / multiplier;
 }
 
 // Parses object string values into ints
