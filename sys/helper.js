@@ -139,15 +139,15 @@ function makeIpsum(length) {
         switch (i) {
             // Capitalize if first word
             case 0:
-                result += word.charAt(0).toUpperCase() + word.slice(1);
-                break;
-            // Add a coma at random points (between zero and the max length of the string)
-            case randomInRange(0, length):
-                result += word + ', ';
+                result += word.charAt(0).toUpperCase() + word.slice(1) + ' ';
                 break;
             // Adds a period to the last word of the string
-            case length:
+            case length - 1:
                 result += word + '.';
+                break;
+            // Add a coma at random points (between zero and the max length of the string)
+            case randomInRange(0, length - 1 ):
+                result += word + ', ';
                 break;
             // Adds a simple space to any other word
             default:
