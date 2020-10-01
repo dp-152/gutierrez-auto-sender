@@ -8,7 +8,8 @@ const {
     randomInRange,
     makeIpsum,
     typeTime,
-    percentualVariation
+    percentualVariation,
+    roundToPrecision
 } = require("../helper");
 
 
@@ -44,6 +45,23 @@ async function familiarStartConversation(client) {
     }
 }
 
+async function familiarReply(client) {
+
+    // TODO: Determine and track which familiar is replying to
+    // TODO: Enforce a limit to reply routine (random number to determine if should send reply tag or not?)
+    client.onMessage(message => {
+        if (message.body.includes('{{REPLY}}')) {
+            sendRandomMessages(
+                client,
+                message.from,
+                randomInRange(2, 5),
+                roundToPrecision(Math.random()) === 1
+            );
+        }
+    });
+
+}
+
 async function sendRandomMessages(client, target, maxMsg = 8, askForReply = true) {
     // Determining the amount of messages to send at once to current target
     const messageAmount = randomInRange(1, maxMsg);
@@ -72,7 +90,7 @@ async function sendRandomMessages(client, target, maxMsg = 8, askForReply = true
     }
 }
 
-
 module.exports = {
-    familiarStartConversation
+    familiarStartConversation,
+    familiarReply
 }
