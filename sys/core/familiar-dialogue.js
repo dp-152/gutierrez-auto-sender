@@ -42,7 +42,7 @@ async function familiarStartConversation(client) {
             logger.debug(`{{FAMILIAR}}: Selected target at index ${targetIndex}`);
         }
         // Returns a valid contact object
-        const target = await client.getNumberProfile(familiarList.contacts[targetIndex].phone);
+        const target = await client.getNumberProfile(familiarList.contacts[targetIndex].phone + '@c.us');
         logger.info(`{{FAMILIAR}}: Target is ${target.id._serialized}`);
         excludeTarget.push(targetIndex);
         logger.debug(`{{FAMILIAR}}: Pushed target to exclusion list`);
