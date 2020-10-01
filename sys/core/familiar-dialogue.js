@@ -38,35 +38,40 @@ async function familiarStartConversation(client) {
         const target = await client.getNumberProfile(familiarList.contacts[targetIndex].phone);
         excludeTarget.push(targetIndex);
 
-        // Determining the amount of messages to send at once to current target
-        const messageAmount = randomInRange(1, 8);
-
-        // Loops for the amount of messages determined on the previous step
-        for (let j = 0; j < messageAmount; ++j) {
-            // Generates a random lorem ipsum string within the range of 5 to 35 words
-            let message = makeIpsum(randomInRange(5, 35));
-
-            // If last message, add the reply tag
-            if (j === messageAmount - 1)
-                message += "{{REPLY}}";
-
-            client.startTyping(target.id._serialized).then()
-                .catch((err) => {
-                    logger.error(err);
-                });
-
-            await new Promise(r => {
-               const typingTime = typeTime(message.length, settings.timeouts.typing, settings.timeouts.typing_variance);
-               setTimeout(r, typingTime);
-            });
-
-            await client.sendText(target.id._serialized, message).catch(err => logger.error(err));
-            client.stopTyping(target.id._serialized).then().catch(err => logger.error(err));
-        }
+        await sendRandomMessages(client, target.id._serialized);
 
         await new Promise(r => setTimeout(r, percentualVariation(15, 15)));
     }
 }
+
+async function sendRandomMessages(client, target, maxMsg = 8, askForReply = true) {
+    // Determining the amount of messages to send at once to current target
+    const messageAmount = randomInRange(1, maxMsg);
+
+    // Loops for the amount of messages determined on the previous step
+    for (let j = 0; j < messageAmount; ++j) {
+        // Generates a random lorem ipsum string within the range of 5 to 35 words
+        let message = makeIpsum(randomInRange(5, 35));
+
+        // If last message, add the reply tag
+        if (j === messageAmount - 1 && askForReply)
+            message += "{{REPLY}}";
+
+        client.startTyping(target).then()
+            .catch((err) => {
+                logger.error(err);
+            });
+
+        await new Promise(r => {
+            const typingTime = typeTime(message.length, settings.timeouts.typing, settings.timeouts.typing_variance);
+            setTimeout(r, typingTime);
+        });
+
+        await client.sendText(target, message).catch(err => logger.error(err));
+        client.stopTyping(target).then().catch(err => logger.error(err));
+    }
+}
+
 
 module.exports = {
     familiarStartConversation
