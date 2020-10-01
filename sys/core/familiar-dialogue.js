@@ -11,15 +11,16 @@ const {
     percentualVariation
 } = require("../helper");
 
+
+// Loading send list from resources/familiar_list.json
+// TODO: Load this file from ini parameters
+const familiarList = JSON.parse(fs.readFileSync(
+    path.resolve(__dirname, '..', 'resources', 'familiar_list.json'),
+    'utf-8'
+));
+
 // Function to initiate conversations with familiar accounts
 async function familiarStartConversation(client) {
-
-    // Loading send list from resources/familiar_list.json
-    // TODO: Load this file from ini parameters
-    const sendList = JSON.parse(fs.readFileSync(
-        path.resolve(__dirname, '..', 'resources', 'familiar_list.json'),
-        'utf-8'
-    ));
 
     // Determining the amount of targets to start a conversation with
     const targetAmount = randomInRange(2, 6);
@@ -28,13 +29,13 @@ async function familiarStartConversation(client) {
 
     for (let i = 0; i < targetAmount; ++i) {
         // Taking a random target from send list
-        let targetIndex = randomInRange(0, sendList.contacts.length - 1);
+        let targetIndex = randomInRange(0, familiarList.contacts.length - 1);
         // Will loop until it finds a contact it has not sent to yet
         while (excludeTarget.includes(targetIndex)){
-            targetIndex = randomInRange(0, sendList.contacts.length - 1);
+            targetIndex = randomInRange(0, familiarList.contacts.length - 1);
         }
         // Returns a valid contact object
-        const target = await client.getNumberProfile(sendList.contacts[targetIndex].phone);
+        const target = await client.getNumberProfile(familiarList.contacts[targetIndex].phone);
         excludeTarget.push(targetIndex);
 
         // Determining the amount of messages to send at once to current target
