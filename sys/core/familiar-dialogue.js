@@ -16,7 +16,7 @@ const {
 // Loading send list from resources/familiar_list.json
 // TODO: Load this file from ini parameters
 const familiarList = JSON.parse(fs.readFileSync(
-    path.resolve(__dirname, '..', 'resources', 'familiar_list.json'),
+    path.resolve(__dirname, '..', '..', 'resources', 'familiar_list.json'),
     'utf-8'
 ));
 
