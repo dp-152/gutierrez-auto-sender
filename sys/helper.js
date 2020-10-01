@@ -122,6 +122,11 @@ function parseIntsInObj(obj) {
       return obj;
 }
 
+// Returns suffix if int is different than 1
+function pluralSuffix(int, suffix) {
+    return int === 1 ? '' : suffix;
+}
+
 // Generates a lorem ipsum string of length n (words)
 function makeIpsum(length) {
 
@@ -170,5 +175,6 @@ module.exports = {
     roundToPrecision,
     parseIntsInObj,
     randomInRange,
-    makeIpsum
+    makeIpsum,
+    pluralSuffix
 }
