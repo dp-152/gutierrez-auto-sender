@@ -67,3 +67,6 @@ logs/
 # Exclusion for familiar dialogue related files
 resources/familiar_lines.txt
 resources/familiar_list.json
+
+# Local staging file
+staging.js
