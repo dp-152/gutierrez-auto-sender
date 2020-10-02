@@ -219,42 +219,8 @@ async function massSend(client) {
 module.exports = massSend;
 
 async function evaluateTimeouts() {
-    if (deepSleepEveryCounter < settings.timeouts.deep_sleep_every) {
 
-        logger.info(`{{SLEEP}}: Current deep sleep count is ${deepSleepEveryCounter},` +
-            ` up to a max of ${settings.timeouts.deep_sleep_every}`);
-        ++deepSleepEveryCounter;
-
-        if (sleepEveryCounter < settings.timeouts.sleep_every) {
-
-            logger.info(`{{SLEEP}}: Current short sleep count is ${sleepEveryCounter},` +
-                ` up to a max of ${settings.timeouts.sleep_every}`);
-            ++sleepEveryCounter;
-
-            const randomBetweenTargets = percentualVariation(
-                settings.timeouts.between_targets,
-                settings.timeouts.typing_variance
-            );
-            await new Promise(resolve => {
-                logger.info(
-                    `{{SLEEP}}: Waiting ${roundToPrecision(randomBetweenTargets, 2)}` +
-                    ` seconds before going to next contact`)
-                setTimeout(resolve, randomBetweenTargets * 1000);
-            });
-        } else if (sleepEveryCounter >= settings.timeouts.sleep_every) {
-            sleepEveryCounter = 0;
-
-            const randomSleepDuration = percentualVariation(
-                settings.timeouts.sleep_duration,
-                settings.timeouts.typing_variance
-            );
-            await new Promise(resolve => {
-                logger.info(`{{SLEEP}}: Reached sleep target limit (${settings.timeouts.sleep_every}) - ` +
-                    `Sleeping for ${roundToPrecision(randomSleepDuration, 2)} seconds`);
-                setTimeout(resolve, randomSleepDuration * 1000);
-            });
-        }
-    } else if (deepSleepEveryCounter >= settings.timeouts.deep_sleep_every) {
+    if (deepSleepEveryCounter >= settings.timeouts.deep_sleep_every){
         deepSleepEveryCounter = 0;
         sleepEveryCounter = 0;
 
@@ -268,4 +234,27 @@ async function evaluateTimeouts() {
             setTimeout(resolve, randomDeepSleepDuration * 60 * 1000);
         });
     }
+    else if (sleepEveryCounter >= settings.timeouts.sleep_every) {
+        sleepEveryCounter = 0;
+
+        const randomSleepDuration = percentualVariation(
+            settings.timeouts.sleep_duration,
+            settings.timeouts.typing_variance
+        );
+        await new Promise(resolve => {
+            logger.info(`{{SLEEP}}: Reached sleep target limit (${settings.timeouts.sleep_every}) - ` +
+                `Sleeping for ${roundToPrecision(randomSleepDuration, 2)} seconds`);
+            setTimeout(resolve, randomSleepDuration * 1000);
+        });
+    }
+    else {
+        logger.info(`{{SLEEP}}: Current deep sleep count is ${deepSleepEveryCounter},` +
+            ` up to a max of ${settings.timeouts.deep_sleep_every}`);
+        ++deepSleepEveryCounter;
+
+        logger.info(`{{SLEEP}}: Current short sleep count is ${sleepEveryCounter},` +
+            ` up to a max of ${settings.timeouts.sleep_every}`);
+        ++sleepEveryCounter;
+    }
+
 }
