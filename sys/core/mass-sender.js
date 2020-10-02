@@ -17,10 +17,16 @@ const {
     settings,
     global
 } = require('../global');
+const {
+    familiarStartConversation,
+    familiarReply
+} = require('./familiar-dialogue');
+
 
 // Setting counters for sleep and deep sleep routines
 let sleepEveryCounter = 0;
 let deepSleepEveryCounter = 0;
+let familiarConversationCounter = 0;
 
 // Mass sender thread
 async function massSend(client) {
