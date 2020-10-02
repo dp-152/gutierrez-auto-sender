@@ -206,7 +206,7 @@ async function massSend(client) {
                 finalReport.pushLog(contact.phone, false);
             }
 
-            await evaluateTimeouts();
+            await evaluateTimeouts(client);
 
             logger.info(`{{MASS SEND}}: Send Job Progress: Completed target ${global.vars.sendListIndex} out of ${sendList.contacts.length}`);
             const jobPercentComplete = roundToPrecision(global.vars.sendListIndex / sendList.contacts.length * 100, 2);
@@ -218,9 +218,16 @@ async function massSend(client) {
 
 module.exports = massSend;
 
-async function evaluateTimeouts() {
+async function evaluateTimeouts(client) {
 
-    if (deepSleepEveryCounter >= settings.timeouts.deep_sleep_every){
+    // TODO: Value for familiar conversation is hard-coded - should be passed to INI
+    if (familiarConversationCounter >= 25) {
+        familiarConversationCounter = 0;
+        deepSleepEveryCounter = 0;
+        sleepEveryCounter = 0;
+        await familiarStartConversation(client)
+    }
+    else if (deepSleepEveryCounter >= settings.timeouts.deep_sleep_every){
         deepSleepEveryCounter = 0;
         sleepEveryCounter = 0;
 
@@ -248,6 +255,11 @@ async function evaluateTimeouts() {
         });
     }
     else {
+        // TODO: Value for familiar conversation is hard-coded - should be passed to INI
+        logger.info(`{{SLEEP}}: Current familiar conversation count is ${familiarConversationCounter},` +
+            ` up to a max of 25`);
+        ++familiarConversationCounter;
+
         logger.info(`{{SLEEP}}: Current deep sleep count is ${deepSleepEveryCounter},` +
             ` up to a max of ${settings.timeouts.deep_sleep_every}`);
         ++deepSleepEveryCounter;
