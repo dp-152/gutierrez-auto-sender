@@ -2,6 +2,7 @@ const { logger } = require("../logger");
 const { settings, campaignName } = require("../global");
 const { replaceKeys } = require("../helper");
 
+//TODO: Separate relay from auto-reply function
 async function autoReply(client, message) {
     logger.info(`{{LISTENER}}: Message has matched criteria. Sending relay and reply`);
     logger.info(`{{LISTENER}}: Relaying message to ${settings.relay.number}`);
