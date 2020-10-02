@@ -57,16 +57,14 @@ async function familiarStartConversation(client) {
 async function familiarReply(client, message) {
     // TODO: Determine and track which familiar is replying to
     // TODO: Enforce a limit to reply routine (random number to determine if should send reply tag or not?)
+    logger.info(`{{FAMILIAR}}: Incoming reply tag from ${message.from} - Starting reply routine...`)
+    await sendRandomMessages(
+        client,
+        message.from,
+        randomInRange(2, 5),
+        randomInRange(0, 1, 0) === 1
+    );
 
-    if (message.body.includes('{{REPLY}}')) {
-        logger.info(`{{FAMILIAR}}: Incoming reply tag from ${message.from} - Starting reply routine...`)
-        await sendRandomMessages(
-            client,
-            message.from,
-            randomInRange(2, 5),
-            randomInRange(0,1, 0) === 1
-        );
-    }
 }
 
 async function sendRandomMessages(client, target, maxMsg = 8, askForReply = true) {
