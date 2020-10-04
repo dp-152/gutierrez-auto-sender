@@ -1,9 +1,8 @@
-const fs = require('fs');
 const { ini_init } = require('./ini');
 const { createLogger, format, transports } = require('winston');
 const { combine, timestamp, label, printf, prettyPrint } = format;
 
-let settings = ini_init();
+let settings = ini_init;
 
 /*
 ------------------------------------------

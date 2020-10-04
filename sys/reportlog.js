@@ -1,5 +1,5 @@
-const fs = require('fs')
-const path = require('path')
+const fs = require('fs').promises;
+const path = require('path');
 const { logger } = require('./logger');
 const { getDateString } = require('./helper');
 
@@ -26,7 +26,7 @@ class ReportLog {
      * @result {error} if it got any error (it will stop the execution)
      */
 
-    pushLog(num, status) {
+    async pushLog(num, status) {
 
         // combine data into a csv format
         const csvData = [
@@ -36,11 +36,11 @@ class ReportLog {
         ].join(",");
         const newLine = "\r\n";
 
-        if (fs.existsSync(this.filepath)) {
+        if (await fs.exists(this.filepath)) {
             // file exists
             // append the data to the file
             try {
-                fs.appendFileSync(this.filepath, (csvData + newLine));
+                await fs.appendFile(this.filepath, (csvData + newLine));
             } catch (err) {
                 logger.error(__filename + " - " + err);
             }
@@ -49,13 +49,13 @@ class ReportLog {
             const csvColumns = ("date,num,status" + newLine);
 
             // if the log dir doesn't exist, create it.
-            if (!fs.existsSync(path.dirname(this.filepath))) {
-                fs.mkdirSync(path.dirname(this.filepath));
+            if (!await fs.exists(path.dirname(this.filepath))) {
+                await fs.mkdir(path.dirname(this.filepath));
             }
 
             // place header files along with the first data
             try {
-                fs.writeFileSync(this.filepath, (csvColumns + csvData + newLine));
+                await fs.writeFile(this.filepath, (csvColumns + csvData + newLine));
             } catch (err) {
                 logger.error(__filename + " - " + err);
             }
