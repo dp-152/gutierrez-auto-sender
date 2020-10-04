@@ -1,4 +1,4 @@
-const fs = require('fs').promises;
+const fs = require('fs');
 const ini = require('ini');
 const { argv } = require('yargs');
 
@@ -32,12 +32,10 @@ let settDef = {
     }
 };
 
-let ini_init;
-
-async function loadIni(configFile = argv.config) {
+const ini_init = (configFile = argv.config) => {
   let file;
   try {
-    file = await fs.readFile(configFile, 'utf-8');
+    file = fs.readFileSync(configFile, 'utf-8');
     settings = ini.parse(file);
     settings = checkParameters(settings);
   } catch (e) {
@@ -46,7 +44,7 @@ async function loadIni(configFile = argv.config) {
     console.info('Falling back to default parameters');
     settings = settDef;
   }
-  ini_init = settings;
+  return settings;
 }
 
 function checkParameters(obj) {

@@ -5,7 +5,7 @@ const path = require('path');
 // Load required files from CLI arguments
 const sendListFile = argv.list;
 const settingsFile = argv.config;
-const settings = ini_init;
+const settings = ini_init(settingsFile);
 const campaignDir = argv.dir;
 const campaignName = path.basename(campaignDir);
 
