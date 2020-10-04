@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 const {ReportLog} = require("../reportlog");
 const { logger, report } = require('../logger');
@@ -29,7 +29,7 @@ let deepSleepEveryCounter = 0;
 async function massSend(client) {
 
     // Load send list passed as --send argument
-    const sendList = JSON.parse(fs.readFileSync(sendListFile, 'utf-8'));
+    const sendList = JSON.parse(await fs.readFile(sendListFile, 'utf-8'));
 
     logger.info(`{{MASS SEND}}: Campaign name is: ${path.dirname(campaignDir)}`);
 
@@ -48,13 +48,13 @@ async function massSend(client) {
     // Enumerates send dir text and attachment files from --dir argument
     // Attachment files will be sent in alphabetical order
     logger.info("{{MASS SEND}}: Probing campaign dir for text files and attachments...")
-    const campaignContent = loadCampaignFiles(campaignDir);
+    const campaignContent = await loadCampaignFiles(campaignDir);
     logger.info(`{{MASS SEND}}: Loaded campaign files: ${JSON.stringify(campaignContent, null, 4)}`)
 
     // TODO: Add option to send links with preview
     // TODO: Add option to send contacts
     logger.info("{{MASS SEND}}: Loading campaign text...")
-    const campaignText = readTextFromFiles(campaignContent.text);
+    const campaignText = await readTextFromFiles(campaignContent.text);
     logger.info("{{MASS SEND}}: Text loaded")
 
     // Sleep for 5 seconds after init, before starting send job
@@ -187,14 +187,14 @@ async function massSend(client) {
                  * @param {string}  targetID    Phone number
                  * @param {boolean}    status      Sent status
                  */
-                finalReport.pushLog(contact.phone, true);
+                await finalReport.pushLog(contact.phone, true);
 
             } else {
                 logger.info(`{{MASS SEND}}: ${contact.name} ${contact.phone} - Invalid or nonexistent contact - skipping`);
                 report.info({ message: "Invalid or nonexistent contact - skipping", number: contact.phone, status: false, timestamp: Math.floor(new Date().getTime() / 1000) });
 
                 /** ReportLog */
-                finalReport.pushLog(contact.phone, false);
+                await finalReport.pushLog(contact.phone, false);
             }
 
             await evaluateTimeouts();
