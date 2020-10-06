@@ -14,6 +14,20 @@ class ReportLog {
      */
     constructor(filepath) {
         this.filepath = filepath;
+        const newLine = "\r\n";
+        const csvColumns = ("date,num,status" + newLine);
+        // Make the log dir.
+        try {
+            fs.mkdir(path.dirname(this.filepath), { recursive: true });
+        } catch (err) {
+            logger.error(__filename + " - " + err);
+        }
+        // Create a CSV file with headers
+        try {
+            fs.writeFile(this.filepath, (csvColumns));
+        } catch (err) {
+            logger.error(__filename + " - " + err);
+        }
     }
 
     /**
@@ -36,29 +50,10 @@ class ReportLog {
         ].join(",");
         const newLine = "\r\n";
 
-        if (await fs.exists(this.filepath)) {
-            // file exists
-            // append the data to the file
-            try {
-                await fs.appendFile(this.filepath, (csvData + newLine));
-            } catch (err) {
-                logger.error(__filename + " - " + err);
-            }
-        } else {
-            // file doesn't exists
-            const csvColumns = ("date,num,status" + newLine);
-
-            // if the log dir doesn't exist, create it.
-            if (!await fs.exists(path.dirname(this.filepath))) {
-                await fs.mkdir(path.dirname(this.filepath));
-            }
-
-            // place header files along with the first data
-            try {
-                await fs.writeFile(this.filepath, (csvColumns + csvData + newLine));
-            } catch (err) {
-                logger.error(__filename + " - " + err);
-            }
+        try {
+            await fs.appendFile(this.filepath, (csvData + newLine));
+        } catch (err) {
+            logger.error(__filename + " - " + err);
         }
 
     }
