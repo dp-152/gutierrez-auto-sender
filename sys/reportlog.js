@@ -19,7 +19,7 @@ class ReportLog {
         fs.mkdir(path.dirname(this.#_filepath), { recursive: true })
             .then(() => {
                 logger.info("{{REPORT}}: Created report directory successfully");
-                fs.writeFile(this.#_filepath, (csvColumns))
+                fs.writeFile(this.#_filepath, (csvColumns), {encoding: "utf-8"})
                     .then(() => {
                         logger.info('{{REPORT}}: Created csv report file successfully');
                         logger.debug(`{{REPORT}}: Written line: ${csvColumns}`);
@@ -49,7 +49,7 @@ class ReportLog {
             num,
             status
         ].join(",");
-        fs.appendFile(this.#_filepath, (csvData + this.#_newLine))
+        fs.appendFile(this.#_filepath, (csvData + this.#_newLine), {encoding: "utf-8"})
             .then(() => {
                 logger.info('{{REPORT}}: Written line to report log file');
                 logger.debug(`{{REPORT}}: Line appended to file: ${csvData}`)
