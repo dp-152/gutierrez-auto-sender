@@ -17,16 +17,19 @@ class ReportLog {
         const newLine = "\r\n";
         const csvColumns = ("date,num,status" + newLine);
         // Make the log dir.
-        try {
-            fs.mkdir(path.dirname(this.filepath), { recursive: true }).then(() => {
-                logger.info("Dir created, appending headers.");
-                fs.writeFile(this.filepath, (csvColumns)).then(() => {
-                    logger.info(`Headers to file ${this.filepath} successful.`);
-                });
-            });
-        } catch (err) {
-            logger.error(__filename + " - " + err);
-        }
+        fs.mkdir(path.dirname(this.filepath), { recursive: true })
+            .then(() => {
+                logger.info("{{REPORT}}: Created report directory successfully");
+                fs.writeFile(this.filepath, (csvColumns))
+                    .then(() => {
+                        logger.info('{{REPORT}}: Created csv report file successfully');
+                        logger.debug(`{{REPORT}}: Written line: ${csvColumns}`);
+                    })
+                    .catch(err => logger.error(`{{REPORT}}: Error creating report file - ${filepath} - ${err}`));
+
+            })
+            .catch(err => logger.error(`{{REPORT}}: Error creating report directory - ${filepath} - ${err}`));
+
     }
 
     /**
@@ -48,16 +51,13 @@ class ReportLog {
             status
         ].join(",");
         const newLine = "\r\n";
-
-        try {
-            await fs.appendFile(this.filepath, (csvData + newLine));
-            logger.info(`CSV data: ${csvData} appended to file.`);
-        } catch (err) {
-            logger.error(__filename + " - " + err);
-        }
-
+        fs.appendFile(this.filepath, (csvData + newLine))
+            .then(() => {
+                logger.info('{{REPORT}}: Written line to report log file');
+                logger.debug(`{{REPORT}}: Line appended to file: ${csvData}`)
+            })
+            .catch(err => logger.error(`{{REPORT}}: Error writing to report file - ${this.filepath} - ${err} `));
     }
-
 }
 
 module.exports = { ReportLog };
