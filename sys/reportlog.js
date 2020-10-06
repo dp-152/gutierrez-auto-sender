@@ -18,13 +18,12 @@ class ReportLog {
         const csvColumns = ("date,num,status" + newLine);
         // Make the log dir.
         try {
-            fs.mkdir(path.dirname(this.filepath), { recursive: true });
-        } catch (err) {
-            logger.error(__filename + " - " + err);
-        }
-        // Create a CSV file with headers
-        try {
-            fs.writeFile(this.filepath, (csvColumns));
+            fs.mkdir(path.dirname(this.filepath), { recursive: true }).then(() => {
+                logger.info("Dir created, appending headers.");
+                fs.writeFile(this.filepath, (csvColumns)).then(() => {
+                    logger.info(`Headers to file ${this.filepath} successful.`);
+                });
+            });
         } catch (err) {
             logger.error(__filename + " - " + err);
         }
@@ -52,6 +51,7 @@ class ReportLog {
 
         try {
             await fs.appendFile(this.filepath, (csvData + newLine));
+            logger.info(`CSV data: ${csvData} appended to file.`);
         } catch (err) {
             logger.error(__filename + " - " + err);
         }
