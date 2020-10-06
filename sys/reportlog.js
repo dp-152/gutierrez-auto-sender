@@ -6,29 +6,28 @@ const { getDateString } = require('./helper');
 class ReportLog {
 
     // Local variables;
-    filepath; // File that will be generated
-
+    #_filepath; // File that will be generated
+    #_newLine = "\r\n";
     /**
      * ReportLog constructor
      * @param {string}  filepath     filepath for the JSON file 
      */
     constructor(filepath) {
-        this.filepath = filepath;
-        const newLine = "\r\n";
-        const csvColumns = ("date,num,status" + newLine);
+        this.#_filepath = filepath;
+        const csvColumns = ("date,num,status" + this.#_newLine);
         // Make the log dir.
-        fs.mkdir(path.dirname(this.filepath), { recursive: true })
+        fs.mkdir(path.dirname(this.#_filepath), { recursive: true })
             .then(() => {
                 logger.info("{{REPORT}}: Created report directory successfully");
-                fs.writeFile(this.filepath, (csvColumns))
+                fs.writeFile(this.#_filepath, (csvColumns))
                     .then(() => {
                         logger.info('{{REPORT}}: Created csv report file successfully');
                         logger.debug(`{{REPORT}}: Written line: ${csvColumns}`);
                     })
-                    .catch(err => logger.error(`{{REPORT}}: Error creating report file - ${filepath} - ${err}`));
+                    .catch(err => logger.error(`{{REPORT}}: Error creating report file - ${this.#_filepath} - ${err}`));
 
             })
-            .catch(err => logger.error(`{{REPORT}}: Error creating report directory - ${filepath} - ${err}`));
+            .catch(err => logger.error(`{{REPORT}}: Error creating report directory - ${this.#_filepath} - ${err}`));
 
     }
 
@@ -50,13 +49,12 @@ class ReportLog {
             num,
             status
         ].join(",");
-        const newLine = "\r\n";
-        fs.appendFile(this.filepath, (csvData + newLine))
+        fs.appendFile(this.#_filepath, (csvData + this.#_newLine))
             .then(() => {
                 logger.info('{{REPORT}}: Written line to report log file');
                 logger.debug(`{{REPORT}}: Line appended to file: ${csvData}`)
             })
-            .catch(err => logger.error(`{{REPORT}}: Error writing to report file - ${this.filepath} - ${err} `));
+            .catch(err => logger.error(`{{REPORT}}: Error writing to report file - ${this.#_filepath} - ${err} `));
     }
 }
 
