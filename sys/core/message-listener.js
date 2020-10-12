@@ -1,7 +1,7 @@
 const { logger } = require("../logger");
 const { settings } = require("../global");
 const { familiarReply } = require('./familiar-dialogue');
-const { replyMatch, relayMessage } = require('../listener-helper');
+const { sendReply, relayMessage } = require('../listener-helper');
 
 // Listener thread
 async function messageListener(client) {
@@ -15,13 +15,13 @@ async function messageListener(client) {
         if (settings.relay.enabled) {
             if (message.body === settings.relay.match) {
                 logger.info(`{{MSG LISTENER}}: Message has matched criteria. Sending relay and reply`);
-                replyMatch(client, message);
+                sendReply(client, message, true);
                 relayMessage(client, message);
             }
 
             else {
-                logger.info("{{MSG LISTENER}}: Message has not matched any criteria. Sending default reply...")
-                client.sendText(message.from, settings.relay.reply_default);
+                logger.info("{{MSG LISTENER}}: Message has not matched any criteria. Sending default reply...");
+                sendReply(client, message, false);
             }
         }
         /*
