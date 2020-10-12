@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 const { logger } = require('../logger');
 const {
@@ -13,15 +13,13 @@ const {
     pluralSuffix
 } = require("../helper");
 
-
-// Loading send list from familiar_list.json in send list dir
-const familiarList = JSON.parse(fs.readFileSync(
-    path.resolve(path.dirname(sendListFile), 'familiar_list.json'),
-    'utf-8'
-));
-
 // Function to initiate conversations with familiar accounts
 async function familiarStartConversation(client) {
+    // Loading send list from familiar_list.json in send list dir
+    const familiarList = JSON.parse(await fs.readFile(
+        path.resolve(path.dirname(sendListFile), 'familiar_list.json'),
+        'utf-8'
+    ));
 
     logger.info(`{{FAMILIAR}}: Starting conversation routine`);
 
