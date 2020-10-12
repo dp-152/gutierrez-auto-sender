@@ -82,19 +82,19 @@ function getDateString(date, formatKeys) {
 
 // Generates a random number between a percentual variation threshold (above and below) the base value
 // Takes an int as base value and an int corresponding to the percentual variation to be applied
-function percentualVariation(baseValue, variance, float = true) {
+function percentualVariation(baseValue, variance, isInt = false) {
 
     let min = baseValue - ((baseValue / 100) * variance);
     let max = baseValue + ((baseValue / 100) * variance);
 
-    if (!float) {
+    if (isInt) {
         min = Math.ceil(min);
         max = Math.floor(max);
     }
 
     let result = randomInRange(min, max, false);
 
-    if (!float)
+    if (isInt)
         result = Math.floor(result);
 
     return result;

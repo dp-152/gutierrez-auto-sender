@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { logger } = require('../logger');
 const {
+    sendListFile,
     settings
 } = require('../global');
 const {
@@ -13,10 +14,9 @@ const {
 } = require("../helper");
 
 
-// Loading send list from resources/familiar_list.json
-// TODO: Load this file from ini parameters
+// Loading send list from familiar_list.json in send list dir
 const familiarList = JSON.parse(fs.readFileSync(
-    path.resolve(__dirname, '..', '..', 'resources', 'familiar_list.json'),
+    path.resolve(path.dirname(sendListFile), 'familiar_list.json'),
     'utf-8'
 ));
 
