@@ -70,3 +70,6 @@ resources/familiar_list.json
 
 # Local staging file
 staging.js
+
+# Merge conflict residues
+*.orig
