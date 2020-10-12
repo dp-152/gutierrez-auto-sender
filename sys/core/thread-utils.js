@@ -16,14 +16,12 @@ function createVenom(instanceName) {
         (client) => {
             global.vars.clientIsConnectedFlag = true;
 
-            // Start listener thread
-            if (settings.relay.enabled) {
-                listener(client)
-                    .catch((err) => {
-                        logger.error('{{INIT}}: Error trying to start a listener thread.');
-                        logger.error(err);
-                    });
-            }
+            // Start listener thread{
+            listener(client)
+                .catch((err) => {
+                    logger.error('{{INIT}}: Error trying to start a listener thread.');
+                    logger.error(err);
+                });
 
             // Start mass send job
             logger.info("{{INIT}}: Initializing Mass Sender Thread...")

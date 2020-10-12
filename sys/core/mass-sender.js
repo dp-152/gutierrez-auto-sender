@@ -4,9 +4,9 @@ const {ReportLog} = require("../reportlog");
 const { logger, report } = require('../logger');
 const {
     getDateString,
-    loadCampaignFiles,
+    loadFilesInDir,
     percentualVariation,
-    readTextFromFiles,
+    readTextFiles,
     roundToPrecision,
     replaceKeys,
     typeTime
@@ -17,13 +17,15 @@ const {
     settings,
     global
 } = require('../global');
+const {
+    familiarStartConversation,
+} = require('./familiar-dialogue');
 
-// Initializing timeouts object
-let timeouts = {};
 
 // Setting counters for sleep and deep sleep routines
 let sleepEveryCounter = 0;
 let deepSleepEveryCounter = 0;
+let familiarConversationCounter = 0;
 
 // Mass sender thread
 async function massSend(client) {
@@ -33,28 +35,16 @@ async function massSend(client) {
 
     logger.info(`{{MASS SEND}}: Campaign name is: ${path.dirname(campaignDir)}`);
 
-    // Load timeouts
-    timeouts = {
-        typingWPM: parseInt(settings.timeouts.typing),
-        typingVariance: parseInt(settings.timeouts.typing_variance),
-        betweenFiles: parseInt(settings.timeouts.between_files),
-        betweenTargets: parseInt(settings.timeouts.between_targets),
-        sleepEvery: parseInt(settings.timeouts.sleep_every),
-        sleepDuration: parseInt(settings.timeouts.sleep_duration),
-        deepSleepEvery: parseInt(settings.timeouts.deep_sleep_every),
-        deepSleepDuration: parseInt(settings.timeouts.deep_sleep_duration)
-    }
-
     // Enumerates send dir text and attachment files from --dir argument
     // Attachment files will be sent in alphabetical order
     logger.info("{{MASS SEND}}: Probing campaign dir for text files and attachments...")
-    const campaignContent = await loadCampaignFiles(campaignDir);
+    const campaignContent = await loadFilesInDir(campaignDir);
     logger.info(`{{MASS SEND}}: Loaded campaign files: ${JSON.stringify(campaignContent, null, 4)}`)
 
     // TODO: Add option to send links with preview
     // TODO: Add option to send contacts
     logger.info("{{MASS SEND}}: Loading campaign text...")
-    const campaignText = await readTextFromFiles(campaignContent.text);
+    const campaignText = await readTextFiles(campaignContent.text);
     logger.info("{{MASS SEND}}: Text loaded")
 
     // Sleep for 5 seconds after init, before starting send job
@@ -74,7 +64,11 @@ async function massSend(client) {
     logger.info("{{MASS SEND}}: Starting mass send job...");
 
     logger.info(`{{MASS SEND}}: Send list has a total of ${sendList.contacts.length} targets`)
-    report.info({ message: "SendListTotalTargets", total: sendList.contacts.length, timestamp: Math.floor(new Date().getTime() / 1000) });
+    report.info({
+        message: "SendListTotalTargets",
+        total: sendList.contacts.length,
+        timestamp: Math.floor(new Date().getTime() / 1000)
+    });
 
     const startingIndex = global.vars.sendListIndex
 
@@ -132,8 +126,8 @@ async function massSend(client) {
                     await new Promise(resolve => {
                         let typingTime = typeTime(
                             message.length,
-                            timeouts.typingWPM,
-                            timeouts.typingVariance
+                            settings.timeouts.typing,
+                            settings.timeouts.typing_variance
                         );
                         totalTypingTime += typingTime;
                         logger.info(`{{MASS SEND}}: Typing timeout is ${typingTime}ms - sleeping`);
@@ -155,15 +149,24 @@ async function massSend(client) {
                     logger.debug("{{MASS SEND}}: Stopped typing");
                 }
 
-                report.info({ message: "TypingTime", total: totalTypingTime, number: contact.phone, timestamp: Math.floor(new Date().getTime() / 1000) });
+                report.info({
+                        message: "TypingTime",
+                        total: totalTypingTime,
+                        number: contact.phone,
+                        timestamp: Math.floor(new Date().getTime() / 1000)
+                    });
 
                 let totalAttachmentTime = 0;
 
                 for (let attachment of campaignContent.files) {
-                    const randomBetweenFiles = percentualVariation(timeouts.betweenFiles, timeouts.typingVariance)
+                    const randomBetweenFiles = percentualVariation(
+                        settings.timeouts.between_files,
+                        settings.timeouts.typing_variance
+                    );
                     await new Promise(resolve => {
                         logger.info(
-                            `{{MASS SEND}}: Attachment timeout is ${roundToPrecision(randomBetweenFiles, 2)} seconds - sleeping`);
+                            `{{MASS SEND}}: Attachment timeout is` +
+                            ` ${roundToPrecision(randomBetweenFiles, 2)} seconds - sleeping`);
                         setTimeout(resolve,
                             randomBetweenFiles * 1000);
                     });
@@ -178,7 +181,12 @@ async function massSend(client) {
                     totalAttachmentTime += Math.floor(randomBetweenFiles * 1000);
                 }
 
-                report.info({ message: "AttachmentTime", total: totalAttachmentTime, number: contact.phone, timestamp: Math.floor(new Date().getTime() / 1000) });
+                report.info({
+                    message: "AttachmentTime",
+                    total: totalAttachmentTime,
+                    number: contact.phone,
+                    timestamp: Math.floor(new Date().getTime() / 1000)
+                });
 
                 logger.info("{{MASS SEND}}: Finished sending to contact");
 
@@ -197,7 +205,7 @@ async function massSend(client) {
                 await finalReport.pushLog(contact.phone, false);
             }
 
-            await evaluateTimeouts();
+            await evaluateTimeouts(client);
 
             logger.info(`{{MASS SEND}}: Send Job Progress: Completed target ${global.vars.sendListIndex} out of ${sendList.contacts.length}`);
             const jobPercentComplete = roundToPrecision(global.vars.sendListIndex / sendList.contacts.length * 100, 2);
@@ -209,48 +217,55 @@ async function massSend(client) {
 
 module.exports = massSend;
 
-async function evaluateTimeouts() {
-    if (deepSleepEveryCounter < timeouts.deepSleepEvery) {
+async function evaluateTimeouts(client) {
 
-        logger.info(`{{SLEEP}}: Current deep sleep count is ${deepSleepEveryCounter},` +
-            ` up to a max of ${timeouts.deepSleepEvery}`);
-        ++deepSleepEveryCounter;
-
-        if (sleepEveryCounter < timeouts.sleepEvery) {
-
-            logger.info(`{{SLEEP}}: Current short sleep count is ${sleepEveryCounter},` +
-                ` up to a max of ${timeouts.sleepEvery}`);
-            ++sleepEveryCounter;
-
-            const randomBetweenTargets = percentualVariation(timeouts.betweenTargets, timeouts.typingVariance);
-            await new Promise(resolve => {
-                logger.info(
-                    `{{SLEEP}}: Waiting ${roundToPrecision(randomBetweenTargets, 2)}` +
-                    ` seconds before going to next contact`)
-                setTimeout(resolve, randomBetweenTargets * 1000);
-            });
-        } else if (sleepEveryCounter >= timeouts.sleepEvery) {
-            sleepEveryCounter = 0;
-
-            const randomSleepDuration = percentualVariation(timeouts.sleepDuration, timeouts.typingVariance);
-            await new Promise(resolve => {
-                logger.info(`{{SLEEP}}: Reached sleep target limit (${timeouts.sleepEvery}) - ` +
-                    `Sleeping for ${roundToPrecision(randomSleepDuration, 2)} seconds`);
-                setTimeout(resolve, randomSleepDuration * 1000);
-            });
-        }
-    } else if (deepSleepEveryCounter >= timeouts.deepSleepEvery) {
+    // TODO: Value for familiar conversation is hard-coded - should be passed to INI
+    if (familiarConversationCounter >= 25) {
+        familiarConversationCounter = 0;
+        deepSleepEveryCounter = 0;
+        sleepEveryCounter = 0;
+        await familiarStartConversation(client)
+    }
+    else if (deepSleepEveryCounter >= settings.timeouts.deep_sleep_every){
         deepSleepEveryCounter = 0;
         sleepEveryCounter = 0;
 
         const randomDeepSleepDuration = percentualVariation(
-            timeouts.deepSleepDuration,
-            timeouts.typingVariance
+            settings.timeouts.deep_sleep_duration,
+            settings.timeouts.typing_variance
         );
         await new Promise(resolve => {
-            logger.info(`{{SLEEP}}: Reached deep sleep target limit (${timeouts.deepSleepEvery}) - ` +
+            logger.info(`{{SLEEP}}: Reached deep sleep target limit (${settings.timeouts.deep_sleep_every}) - ` +
                 `Sleeping for ${roundToPrecision(randomDeepSleepDuration, 2)} minutes`);
             setTimeout(resolve, randomDeepSleepDuration * 60 * 1000);
         });
     }
+    else if (sleepEveryCounter >= settings.timeouts.sleep_every) {
+        sleepEveryCounter = 0;
+
+        const randomSleepDuration = percentualVariation(
+            settings.timeouts.sleep_duration,
+            settings.timeouts.typing_variance
+        );
+        await new Promise(resolve => {
+            logger.info(`{{SLEEP}}: Reached sleep target limit (${settings.timeouts.sleep_every}) - ` +
+                `Sleeping for ${roundToPrecision(randomSleepDuration, 2)} seconds`);
+            setTimeout(resolve, randomSleepDuration * 1000);
+        });
+    }
+    else {
+        // TODO: Value for familiar conversation is hard-coded - should be passed to INI
+        logger.info(`{{SLEEP}}: Current familiar conversation count is ${familiarConversationCounter},` +
+            ` up to a max of 25`);
+        ++familiarConversationCounter;
+
+        logger.info(`{{SLEEP}}: Current deep sleep count is ${deepSleepEveryCounter},` +
+            ` up to a max of ${settings.timeouts.deep_sleep_every}`);
+        ++deepSleepEveryCounter;
+
+        logger.info(`{{SLEEP}}: Current short sleep count is ${sleepEveryCounter},` +
+            ` up to a max of ${settings.timeouts.sleep_every}`);
+        ++sleepEveryCounter;
+    }
+
 }

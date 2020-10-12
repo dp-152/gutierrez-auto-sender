@@ -1,6 +1,8 @@
 const fs = require('fs').promises;
 const path = require('path');
 
+let lipsumWordList;
+
 // Function for setting wait time to simulate human typing
 // Returns wait time in milliseconds
 function typeTime(textLength, CPM, variance= 10) {
@@ -14,7 +16,7 @@ function typeTime(textLength, CPM, variance= 10) {
     return Math.trunc(totalTime);
 }
 
-async function loadCampaignFiles(dir){
+async function loadFilesInDir(dir) {
     // Iterator to folder.
     let text = [];
     let attachments = [];
@@ -35,7 +37,7 @@ async function loadCampaignFiles(dir){
 }
 
 // Reads text from acquired text files array
-async function readTextFromFiles(textFiles){
+async function readTextFiles(textFiles) {
 
     let result = '';
     for (let file of textFiles){
@@ -49,7 +51,7 @@ async function readTextFromFiles(textFiles){
 }
 
 // Replaces known keys within the text with their appropriate equivalents
-function replaceKeys(str, object, delimiter = ["{{", "}}"]){
+function replaceKeys(str, object, delimiter = ["{{", "}}"]) {
 
     let regexp = new RegExp(`${delimiter[0]}(.*?)${delimiter[1]}`, 'g');
     let matches = [...str.matchAll(regexp)];
@@ -82,35 +84,100 @@ function getDateString(date, formatKeys) {
 
 // Generates a random number between a percentual variation threshold (above and below) the base value
 // Takes an int as base value and an int corresponding to the percentual variation to be applied
-function percentualVariation(baseValue, variance, float = true){
+function percentualVariation(baseValue, variance, isInt = false) {
 
     let min = baseValue - ((baseValue / 100) * variance);
     let max = baseValue + ((baseValue / 100) * variance);
 
-    if (!float) {
+    if (isInt) {
         min = Math.ceil(min);
         max = Math.floor(max);
     }
 
-    let result = Math.random() * (max - min + 1) + min
+    let result = randomInRange(min, max, false);
 
-    if (!float)
+    if (isInt)
         result = Math.floor(result);
 
     return result;
 }
 
-function roundToPrecision(value, precision) {
-    var multiplier = Math.pow(10, precision || 0);
+function randomInRange(min, max, isInt = true) {
+    if (isInt)
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    else
+        return Math.random() * (max - min) + min;
+}
+
+// Rounds a float number to n precision digits
+// Use negative precision values to round to tens, hundreds, thousands, et cetera.
+function roundToPrecision(value, precision = 0) {
+    const multiplier = Math.pow(10, precision || 0);
     return Math.round(value * multiplier) / multiplier;
+}
+
+// Parses object string values into ints
+// To be used to retrieve numerical values from object generated from ini file
+function parseIntsInObj(obj) {
+      for (const [key, value] of Object.entries(obj))
+          obj[key] = parseInt(value);
+      return obj;
+}
+
+// Returns suffix if int is different than 1
+function pluralSuffix(int, suffix) {
+    return int === 1 ? '' : suffix;
+}
+
+// Generates a lorem ipsum string of length n (words)
+async function makeIpsum(length) {
+    // Loads word list from misc/lipsum.txt
+    if (!lipsumWordList) {
+        lipsumWordList = await (fs.readFile(path.resolve(__dirname, 'misc', 'lipsum.txt'), "utf-8"));
+        lipsumWordList = lipsumWordList.split(/[\r\n]/g)
+            // Filters out any potential empty strings
+            .filter(line => {
+                return line !== '';
+            });
+    }
+    let result = "";
+    let commaChance = 2;
+    for (let i = 0; i < length; ++i) {
+        // Pulls a random number between zero and the length of the lipsum array
+        const word = lipsumWordList[randomInRange(0, lipsumWordList.length - 1)];
+        switch (i) {
+            // Capitalize if first word
+            case 0:
+                result += word.charAt(0).toUpperCase() + word.slice(1) + ' ';
+                break;
+            // Adds a period to the last word of the string
+            case length - 1:
+                result += word + '.';
+                break;
+            // Add a coma at random points (between zero and the max length of the string)
+            case randomInRange(i - commaChance, i + commaChance):
+                commaChance += 5;
+                result += word + ', ';
+                break;
+            // Adds a simple space to any other word
+            default:
+                --commaChance;
+                result += word + ' ';
+        }
+    }
+    return result;
 }
 
 module.exports = {
     typeTime,
-    loadCampaignFiles,
-    readTextFromFiles,
+    loadFilesInDir,
+    readTextFiles,
     replaceKeys,
     getDateString,
     percentualVariation,
-    roundToPrecision
+    roundToPrecision,
+    parseIntsInObj,
+    randomInRange,
+    makeIpsum,
+    pluralSuffix
 }
