@@ -1,7 +1,7 @@
 const { logger } = require("../logger");
 const { settings, campaignName } = require("../global");
 const { familiarReply } = require('./familiar-dialogue');
-const { autoReply } = require('auto-reply');
+const { autoReply } = require('./auto-reply');
 
 // Listener thread
 async function listener(client) {
