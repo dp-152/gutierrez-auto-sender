@@ -45,7 +45,27 @@ async function massSend(client) {
     // TODO: Add option to send contacts
     logger.info("{{MASS SEND}}: Loading campaign text...")
     const campaignText = await readTextFiles(campaignContent.text);
-    logger.info("{{MASS SEND}}: Text loaded")
+    logger.info("{{MASS SEND}}: Text loaded");
+
+    logger.info('{{MASS SEND}}: Creating assets files for report generation...')
+    fs.mkdir(path.resolve(campaignDir, 'logs', 'assets'), {recursive: true})
+        .then(() => {
+            fs.writeFile(
+                path.resolve(campaignDir, 'logs', 'assets', 'attachments.txt'),
+                campaignContent.files.join('\n'),
+                {encoding: 'utf8'})
+                .then(() => logger.info('{{MASS SEND}}: Created attachments file successfully'))
+                .catch(err => logger.warn('{{MASS SEND}}: Error writing attachment paths to file - ' + err));
+
+            fs.writeFile(
+                path.resolve(campaignDir, 'logs', 'assets', 'text.txt'),
+                campaignText.join('\n'),
+                {encoding: 'utf8'})
+                .then(() => logger.info('{{MASS SEND}}: Created text file successfully'))
+                .catch(err => logger.warn('{{MASS SEND}}: Error writing text to file - ' + err));
+        })
+        .catch(err => logger.error(`{{MASS SEND}}: Error trying to make dir - ${err}\n Trace: ${err.stack}`));
+
 
     // Sleep for 5 seconds after init, before starting send job
     logger.info("{{MASS SEND}}: Sleeping for 5 seconds after init...")
