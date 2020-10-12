@@ -77,7 +77,7 @@ async function massSend(client) {
     logger.info("{{MASS SEND}}: Opening report log file")
     let logDate = getDateString(
         new Date(),
-        "{{year}}-{{month}}-{{day}}_{{hour}}-{{minutes}}-{{seconds}}.{{milliseconds}}");
+        "{{year}}-{{month}}-{{day}}_{{hour}}-{{minutes}} - {{seconds}}.{{milliseconds}}");
     const logPath = path.resolve(campaignDir, 'logs', 'csv', `Report_${settings.instance.name}_${logDate}.csv`);
     let finalReport = new ReportLog(logPath);
 
