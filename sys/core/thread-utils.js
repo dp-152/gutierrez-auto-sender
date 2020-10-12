@@ -1,6 +1,6 @@
 const venom = require('venom-bot');
 const massSend = require('./mass-sender');
-const listener = require('./listener');
+const messageListener = require('./message-listener');
 const probeAccountHealth = require('./health-probe');
 const { logger } = require('../logger');
 const {
@@ -17,7 +17,7 @@ function createVenom(instanceName) {
             global.vars.clientIsConnectedFlag = true;
 
             // Start listener thread{
-            listener(client)
+            messageListener(client)
                 .catch((err) => {
                     logger.error('{{INIT}}: Error trying to start a listener thread.');
                     logger.error(err);
