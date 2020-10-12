@@ -92,7 +92,7 @@ function percentualVariation(baseValue, variance, float = true) {
         max = Math.floor(max);
     }
 
-    let result = randomInRange(min, max);
+    let result = randomInRange(min, max, false);
 
     if (!float)
         result = Math.floor(result);
@@ -100,15 +100,18 @@ function percentualVariation(baseValue, variance, float = true) {
     return result;
 }
 
-function randomInRange(min, max, precision = 0) {
-    return roundToPrecision(Math.random() * (max - min + 1) + min, precision);
+function randomInRange(min, max, isInt = true) {
+    if (isInt)
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    else
+        return Math.random() * (max - min) + min;
 }
 
 // Rounds a float number to n precision digits
 // Use negative precision values to round to tens, hundreds, thousands, et cetera.
 function roundToPrecision(value, precision = 0) {
     const multiplier = Math.pow(10, precision || 0);
-    return Math.floor(value * multiplier) / multiplier;
+    return Math.round(value * multiplier) / multiplier;
 }
 
 // Parses object string values into ints

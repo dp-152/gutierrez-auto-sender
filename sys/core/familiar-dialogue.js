@@ -62,7 +62,7 @@ async function familiarReply(client, message) {
         client,
         message.from,
         randomInRange(2, 5),
-        randomInRange(0, 1, 0) === 1
+        randomInRange(0, 1) === 1
     );
 
 }
