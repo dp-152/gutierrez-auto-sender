@@ -1,6 +1,8 @@
 const fs = require('fs').promises;
 const path = require('path');
 
+let lipsumWordList;
+
 // Function for setting wait time to simulate human typing
 // Returns wait time in milliseconds
 function typeTime(textLength, CPM, variance= 10) {
@@ -128,20 +130,21 @@ function pluralSuffix(int, suffix) {
 }
 
 // Generates a lorem ipsum string of length n (words)
-function makeIpsum(length) {
-
+async function makeIpsum(length) {
     // Loads word list from misc/lipsum.txt
-    const lipsum = fs.readFileSync(path.resolve(__dirname, 'misc', 'lipsum.txt'), "utf-8")
-        .split(/[\r\n]/g)
-        // Filters out any potential empty strings
-        .filter(line => {
-            return line !== '';
-        });
+    if (!lipsumWordList) {
+        lipsumWordList = await (fs.readFile(path.resolve(__dirname, 'misc', 'lipsum.txt'), "utf-8"));
+        lipsumWordList = lipsumWordList.split(/[\r\n]/g)
+            // Filters out any potential empty strings
+            .filter(line => {
+                return line !== '';
+            });
+    }
     let result = "";
     let commaChance = 2;
     for (let i = 0; i < length; ++i) {
         // Pulls a random number between zero and the length of the lipsum array
-        const word = lipsum[randomInRange(0, lipsum.length - 1)];
+        const word = lipsumWordList[randomInRange(0, lipsumWordList.length - 1)];
         switch (i) {
             // Capitalize if first word
             case 0:
