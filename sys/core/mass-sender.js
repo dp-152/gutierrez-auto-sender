@@ -238,9 +238,22 @@ async function massSend(client) {
 module.exports = massSend;
 
 async function evaluateTimeouts(client) {
+    logger.info('{{SLEEP}}: Evaluating timeouts...');
+
+    ++familiarConversationCounter;
+    logger.info(`{{SLEEP}}: Current familiar conversation count is ${familiarConversationCounter},` +
+        ` up to a max of 8`);
+
+    ++deepSleepEveryCounter;
+    logger.info(`{{SLEEP}}: Current deep sleep count is ${deepSleepEveryCounter},` +
+        ` up to a max of ${settings.timeouts.deep_sleep_every}`);
+
+    ++sleepEveryCounter;
+    logger.info(`{{SLEEP}}: Current short sleep count is ${sleepEveryCounter},` +
+        ` up to a max of ${settings.timeouts.sleep_every}`);
 
     // TODO: Value for familiar conversation is hard-coded - should be passed to INI
-    if (familiarConversationCounter >= 25) {
+    if (familiarConversationCounter >= 8) {
         familiarConversationCounter = 0;
         deepSleepEveryCounter = 0;
         sleepEveryCounter = 0;
@@ -272,20 +285,6 @@ async function evaluateTimeouts(client) {
                 `Sleeping for ${roundToPrecision(randomSleepDuration, 2)} seconds`);
             setTimeout(resolve, randomSleepDuration * 1000);
         });
-    }
-    else {
-        // TODO: Value for familiar conversation is hard-coded - should be passed to INI
-        logger.info(`{{SLEEP}}: Current familiar conversation count is ${familiarConversationCounter},` +
-            ` up to a max of 25`);
-        ++familiarConversationCounter;
-
-        logger.info(`{{SLEEP}}: Current deep sleep count is ${deepSleepEveryCounter},` +
-            ` up to a max of ${settings.timeouts.deep_sleep_every}`);
-        ++deepSleepEveryCounter;
-
-        logger.info(`{{SLEEP}}: Current short sleep count is ${sleepEveryCounter},` +
-            ` up to a max of ${settings.timeouts.sleep_every}`);
-        ++sleepEveryCounter;
     }
 
 }
