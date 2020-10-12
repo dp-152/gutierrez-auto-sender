@@ -45,7 +45,7 @@ const ini_init = (configFile = argv.config) => {
     settings = settDef;
   }
   return settings;
-};
+}
 
 function checkParameters(obj) {
   let sKeys = [false, false, false, false];

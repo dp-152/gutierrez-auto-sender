@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 
 // Function for setting wait time to simulate human typing
@@ -14,14 +14,15 @@ function typeTime(textLength, CPM, variance= 10) {
     return Math.trunc(totalTime);
 }
 
-function loadFilesInDir(dir) {
+async function loadFilesInDir(dir) {
     // Iterator to folder.
     let text = [];
     let attachments = [];
     // filter file from dir and ignore them
-    let files = fs.readdirSync(dir,{withFileTypes: true}).filter(item => !item.isDirectory()).map(item => item.name);
+    let files = await fs.readdir(dir,{withFileTypes: true});
+        //.filter(item => !item.isDirectory()).map(item => item.name);
     
-    files.forEach(file => {
+    files.filter(item => !item.isDirectory()).map(item => item.name).forEach(file => {
         file = path.resolve(`${dir}\\${file}`);
         let ext = path.extname(file).substring(1);
         ext === "txt" ? text.push(file) : attachments.push(file);
@@ -34,17 +35,13 @@ function loadFilesInDir(dir) {
 }
 
 // Reads text from acquired text files array
-function readTextFiles(textFiles) {
+async function readTextFiles(textFiles) {
 
     let result = '';
-    if (Array.isArray(textFiles)) {
-        textFiles.forEach(file => {
-            result += fs.readFileSync(file, 'utf-8');
-            result += '\n'
-        });
+    for (let file of textFiles){
+        result += await fs.readFile(file, 'utf-8');
+        result += '\n'
     }
-    else
-        result = fs.readFileSync(textFiles, 'utf-8');
 
     return result.split(/[\r\n]/g).filter((el) => {
         return el !== "";
