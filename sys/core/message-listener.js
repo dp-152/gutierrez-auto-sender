@@ -1,7 +1,7 @@
 const { logger } = require("../logger");
 const { settings } = require("../global");
 const { familiarReply } = require('./familiar-dialogue');
-const { autoReply } = require('./auto-reply');
+const { replyMatch, relayMessage } = require('../listener-helper');
 
 // Listener thread
 async function messageListener(client) {
@@ -14,7 +14,9 @@ async function messageListener(client) {
         // TODO: Add option to use regex match instead of string match
         if (settings.relay.enabled) {
             if (message.body === settings.relay.match) {
-                autoReply(client, message);
+                logger.info(`{{MSG LISTENER}}: Message has matched criteria. Sending relay and reply`);
+                replyMatch(client, message);
+                relayMessage(client, message);
             }
 
             else {
