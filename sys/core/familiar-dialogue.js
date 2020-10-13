@@ -16,6 +16,7 @@ const {
 // Function to initiate conversations with familiar accounts
 async function familiarStartConversation(client) {
     // Loading send list from familiar_list.json in send list dir
+    // TODO: Do not assume file exists. Instead disable familiar dialogue routine if file not found
     const familiarList = JSON.parse(await fs.readFile(
         path.resolve(path.dirname(sendListFile), 'familiar_list.json'),
         'utf-8'
@@ -75,7 +76,7 @@ async function sendRandomMessages(client, target, maxMsg = 8, askForReply = true
     // Loops for the amount of messages determined on the previous step
     for (let j = 0; j < messageAmount; ++j) {
         // Generates a random lorem ipsum string within the range of 5 to 35 words
-        let message = makeIpsum(randomInRange(5, 35));
+        let message = await makeIpsum(randomInRange(5, 35));
 
         // If last message, add the reply tag
         if (j === messageAmount - 1 && askForReply)
