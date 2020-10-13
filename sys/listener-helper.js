@@ -7,12 +7,17 @@ const {
 
 //TODO: Separate relay from auto-reply function
 async function sendReply(client, message, match) {
-    logger.info(`{{AUTO REPLY}}: Sending reply to received message...`)
+    logger.info(`{{AUTO REPLY}}: Sending reply to received message...`);
     let replyToSend = "";
     if (match)
         replyToSend = settings.relay.reply_onmatch;
     else
         replyToSend = settings.relay.reply_default;
+
+    if (replyToSend === ""){
+        logger.warn('{{AUTO REPLY}} Reply string is empty - aborting reply');
+        return;
+    }
 
     await new Promise(r => {
         let typingTime = typeTime(
