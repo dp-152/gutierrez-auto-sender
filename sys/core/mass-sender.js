@@ -37,17 +37,17 @@ async function massSend(client) {
 
     // Enumerates send dir text and attachment files from --dir argument
     // Attachment files will be sent in alphabetical order
-    logger.info("{{MASS SEND}}: Probing campaign dir for text files and attachments...")
+    logger.info("{{MASS SEND}}: Probing campaign dir for text files and attachments...");
     const campaignContent = await loadFilesInDir(campaignDir);
-    logger.info(`{{MASS SEND}}: Loaded campaign files: ${JSON.stringify(campaignContent, null, 4)}`)
+    logger.info(`{{MASS SEND}}: Loaded campaign files: ${JSON.stringify(campaignContent, null, 4)}`);
 
     // TODO: Add option to send links with preview
     // TODO: Add option to send contacts
-    logger.info("{{MASS SEND}}: Loading campaign text...")
+    logger.info("{{MASS SEND}}: Loading campaign text...");
     const campaignText = await readTextFiles(campaignContent.text);
     logger.info("{{MASS SEND}}: Text loaded");
 
-    logger.info('{{MASS SEND}}: Creating assets files for report generation...')
+    logger.info('{{MASS SEND}}: Creating assets files for report generation...');
     fs.mkdir(path.resolve(campaignDir, 'logs', 'assets'), {recursive: true})
         .then(() => {
             fs.writeFile(
@@ -66,15 +66,14 @@ async function massSend(client) {
         })
         .catch(err => logger.error(`{{MASS SEND}}: Error trying to make dir - ${err}\n Trace: ${err.stack}`));
 
-
     // Sleep for 5 seconds after init, before starting send job
-    logger.info("{{MASS SEND}}: Sleeping for 5 seconds after init...")
+    logger.info("{{MASS SEND}}: Sleeping for 5 seconds after init...");
     await new Promise(resolve => {
         setTimeout(resolve, 5000);
     });
 
     // Campaign Report Log ;
-    logger.info("{{MASS SEND}}: Opening report log file")
+    logger.info("{{MASS SEND}}: Opening report log file");
     let logDate = getDateString(
         new Date(),
         "{{year}}-{{month}}-{{day}}_{{hour}}-{{minutes}} - {{seconds}}.{{milliseconds}}");
@@ -83,7 +82,7 @@ async function massSend(client) {
 
     logger.info("{{MASS SEND}}: Starting mass send job...");
 
-    logger.info(`{{MASS SEND}}: Send list has a total of ${sendList.contacts.length} targets`)
+    logger.info(`{{MASS SEND}}: Send list has a total of ${sendList.contacts.length} targets`);
     report.info({
         message: "SendListTotalTargets",
         total: sendList.contacts.length,
