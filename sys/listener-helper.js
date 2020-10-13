@@ -15,7 +15,7 @@ async function sendReply(client, message, match) {
         replyToSend = settings.relay.reply_default;
 
     if (replyToSend === ""){
-        logger.warn('{{AUTO REPLY}} Reply string is empty - aborting reply');
+        logger.warn('{{AUTO REPLY}}: Reply string is empty - aborting reply');
         return;
     }
 
