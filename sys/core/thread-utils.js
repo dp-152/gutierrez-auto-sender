@@ -13,7 +13,19 @@ const {
 
 function createVenom(instanceName) {
 
-    venom.create(instanceName).then(
+    venom.create(
+        instanceName,
+        undefined,
+        (status) => logger.info(`{{INIT}}: Session status: ${status}`),
+        {
+            debug: false,
+            headless: true,
+            disableSpins: true,
+            disableWelcome: true,
+            autoClose: false
+        }
+    )
+        .then(
         (client) => {
             global.vars.clientIsConnectedFlag = true;
 
@@ -50,7 +62,8 @@ function createVenom(instanceName) {
                     logger.error(err);
                 });
 
-        }).catch((err) => {
+        })
+        .catch((err) => {
         logger.error('{{INIT}}: Error trying to start a Venom Instance.');
         logger.error(err);
     });
